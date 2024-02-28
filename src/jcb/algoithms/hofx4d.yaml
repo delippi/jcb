@@ -1,0 +1,13 @@
+time window:
+  begin: '{{window_begin}}'
+  length: '{{window_length}}'
+forecast length: '{{forecast_length}}'
+geometry:
+  {{geometry}}
+initial condition:
+  {{initial_condition}}
+model:
+  {{model}}
+observations:
+  observers:
+    {{observers}}
