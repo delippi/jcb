@@ -1,0 +1,3 @@
+[submodule "src/jcb/configuration/apps/gdas"]
+	path = src/jcb/configuration/apps/gdas
+	url = https://github.com/NOAA-EMC/jcb-gdas
