@@ -71,6 +71,15 @@ class Renderer():
         # Render the template hierarchy
         jedi_dict_yaml = template.render(self.template_dict)
 
+        # Check that everything was rendered
+        jcb.abort_if('{{' in jedi_dict_yaml, f'In template_string_jinja2 ' +
+                     f'the output string still contains template directives. ' +
+                     f'{jedi_dict_yaml}')
+
+        jcb.abort_if('}}' in jedi_dict_yaml, f'In template_string_jinja2 ' +
+                     f'the output string still contains template directives. ' +
+                     f'{jedi_dict_yaml}')
+
         # Convert the rendered string to a dictionary
         return yaml.safe_load(jedi_dict_yaml)
 
