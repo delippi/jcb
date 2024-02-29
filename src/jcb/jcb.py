@@ -1,11 +1,14 @@
-import click
+# --------------------------------------------------------------------------------------------------
 
+import click
+import jcb
+import yaml
 
 # --------------------------------------------------------------------------------------------------
 
 
 @click.group()
-@click.version_option(version='0.0.1', prog_name="Jedi Configuration Builder (jcb)")
+@click.version_option(version=jcb.__version__, prog_name="Jedi Configuration Builder (jcb)")
 def jcb_driver():
     """
     Welcome to the Jedi Configuration Builder (jcb).
@@ -42,20 +45,16 @@ def render(dictionary_of_templates, jedi_yaml):
         jedi_yaml (str): YAML output file containing JEDI configuration. \n
     """
 
-    import jcb.jcb as jcb
-    import yaml
-
     # Open the dictionary of templates yaml into a dictionary
     with open(dictionary_of_templates, 'r') as f:
         dictionary_of_templates = yaml.safe_load(f)
 
     # Call the jcb render function
-    jcb_object = jcb.Renderer(dictionary_of_templates)
-    jedi_dict_str = jcb_object.render()
+    jedi_dict = jcb.render(dictionary_of_templates)
 
     # Write jedi_dict to yaml file
     with open(jedi_yaml, 'w') as f:
-        yaml.dump(jedi_dict_str, f, default_flow_style=False, sort_keys=False)
+        yaml.dump(jedi_dict, f, default_flow_style=False, sort_keys=False)
 
 
 # --------------------------------------------------------------------------------------------------

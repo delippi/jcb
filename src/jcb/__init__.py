@@ -8,12 +8,10 @@ __version__ = '0.0.1'
 
 # --------------------------------------------------------------------------------------------------
 
-def render(dictionary_of_templates):
-    return jcb.jcb.render(dictionary_of_templates)
-
-# --------------------------------------------------------------------------------------------------
-
-def path():
-    return os.path.dirname(__file__)
+# Clean imports for users
+from .jcb import main as main
+from .renderer import Renderer as Renderer
+from .renderer import render as render
+from .utils import *
 
 # --------------------------------------------------------------------------------------------------

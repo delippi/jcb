@@ -1,41 +1,38 @@
 # --------------------------------------------------------------------------------------------------
 
-
 import jcb
 import jinja2
 import os
 import yaml
 
-
 # --------------------------------------------------------------------------------------------------
-
-
-def abort_if(condition: bool, message: str):
-    if condition:
-        print("\033[31m" + message + "\033[0m")
-        raise ValueError(message)
-
-
-# --------------------------------------------------------------------------------------------------
-
 
 class Renderer():
 
-    # ----------------------------------------------------------------------------------------------
+    """
+    A class to render templates using Jinja2 based on a provided dictionary of templates.
+
+    Attributes:
+        template_dict (dict): A dictionary containing the templates and relevant paths.
+        j2_search_paths (list): A list of paths where Jinja2 will look for template files.
+    """
 
     def __init__(self, template_dict: dict):
+
+        """
+        Initializes the Renderer with a given template dictionary and sets up Jinja2 search paths.
+
+        Args:
+            template_dict (dict): A dictionary containing templates and their corresponding paths.
+        """
 
         # Keep the dictionary of templates around
         self.template_dict = template_dict
 
-        # Make sure the dictionary of templates has the algorithm key
-        abort_if('algorithm' not in self.template_dict,
-                 'The dictionary of templates must have an algorithm key')
-
         # Set the paths where jinja will look for files in the hierarchy
         # --------------------------------------------------------------
         # Set the config path
-        config_path = os.path.join(jcb.path(), 'configuration')
+        config_path = os.path.join(os.path.dirname(__file__), 'configuration')
 
         # Path with the algorithm files (top level templates)
         self.j2_search_paths = [os.path.join(config_path, 'algorithms')]
@@ -53,16 +50,29 @@ class Renderer():
 
     # ----------------------------------------------------------------------------------------------
 
-    def render(self):
+    def render(self, algorithm):
+
+        """
+        Renders a given algorithm.
+
+        Args:
+            algorithm (str): The name of the algorithm to assemble a YAML for.
+
+        Returns:
+            dict: The dictionary that can drive the JEDI executable.
+        """
 
         # Create the Jinja2 environment
         env = jinja2.Environment(loader=jinja2.FileSystemLoader(self.j2_search_paths))
 
         # Load the algorithm template
-        template = env.get_template(self.template_dict['algorithm'] + '.yaml')
+        template = env.get_template(algorithm + '.yaml')
 
         # Render the template hierarchy
-        return template.render(self.template_dict)
+        jedi_dict_yaml = template.render(self.template_dict)
+
+        # Convert the rendered string to a dictionary
+        return yaml.safe_load(jedi_dict_yaml)
 
 
 # --------------------------------------------------------------------------------------------------
@@ -70,14 +80,31 @@ class Renderer():
 
 def render(template_dict: dict):
 
+    """
+    Creates JEDI executable using only a dictionary of templates.
+
+    Args:
+        template_dict (dict): A dictionary that must include an 'algorithm' key among the templates.
+
+    Returns:
+        dict: The rendered JEDI dictionary.
+
+    Raises:
+        Exception: If the 'algorithm' key is missing in the template dictionary.
+    """
+
     # Create a jcb object
     jcb_object = Renderer(template_dict)
 
-    # Render the jcb object
-    jedi_dict_str = jcb_object.render()
+    # Make sure the dictionary of templates has the algorithm key
+    jcb.abort_if('algorithm' not in template_dict,
+                 'The dictionary of templates must have an algorithm key')
 
-    # Convert the rendered string to a dictionary
-    return yaml.safe_load(jedi_dict_str)
+    # Extract algorithm from the dictionary of templates
+    algorithm = template_dict['algorithm']
+
+    # Render the jcb object
+    return jcb_object.render(algorithm)
 
 
 # --------------------------------------------------------------------------------------------------
