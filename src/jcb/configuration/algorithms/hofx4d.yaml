@@ -1,13 +1,27 @@
 time window:
   begin: '{{window_begin}}'
   length: '{{window_length}}'
-forecast length: '{{forecast_length}}'
+forecast length: '{{window_length}}'
+
 geometry:
-  {{geometry}}
+{% filter indent(width=2) %}
+{% include 'geometry.yaml' %}
+{% endfilter %}
+
 initial condition:
-  {{initial_condition}}
+{% filter indent(width=2) %}
+{% include 'background.yaml' %}
+{% endfilter %}
+
 model:
-  {{model}}
+{% filter indent(width=2) %}
+{% include model + '.yaml' %}
+{% endfilter %}
+
 observations:
   observers:
-    {{observers}}
+{% for observation in observations %}
+{% filter indent(width=2) %}
+{% include observation + '.yaml' %}
+{% endfilter %}
+{% endfor %}

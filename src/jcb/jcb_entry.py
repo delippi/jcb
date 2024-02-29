@@ -50,11 +50,12 @@ def render(dictionary_of_templates, jedi_yaml):
         dictionary_of_templates = yaml.safe_load(f)
 
     # Call the jcb render function
-    jedi_dict = jcb.render(dictionary_of_templates)
+    jcb_object = jcb.Renderer(dictionary_of_templates)
+    jedi_dict_str = jcb_object.render()
 
     # Write jedi_dict to yaml file
     with open(jedi_yaml, 'w') as f:
-        yaml.dump(jedi_dict, f, default_flow_style=False, sort_keys=False)
+        yaml.dump(jedi_dict_str, f, default_flow_style=False, sort_keys=False)
 
 
 # --------------------------------------------------------------------------------------------------
