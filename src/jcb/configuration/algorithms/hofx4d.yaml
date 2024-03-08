@@ -5,17 +5,20 @@ forecast length: '{{window_length}}'
 
 geometry:
 {% filter indent(width=2) %}
-{% include 'geometry.yaml' %}
+{% set geometry_background = geometry_background|default('geometry_background', true) ~ '.yaml' %}
+{% include geometry_background %}
 {% endfilter %}
 
 initial condition:
 {% filter indent(width=2) %}
-{% include 'background.yaml' %}
+{% set background_file = background|default('background', true) ~ '.yaml' %}
+{% include background_file %}
 {% endfilter %}
 
 model:
+{% set model_file = model|default('model', true) ~ '.yaml' %}
 {% filter indent(width=2) %}
-{% include model + '.yaml' %}
+{% include model_file %}
 {% endfilter %}
 
 observations:

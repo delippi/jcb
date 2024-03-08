@@ -3,6 +3,7 @@
 import jcb
 import jinja2
 import os
+import sys
 import yaml
 
 # --------------------------------------------------------------------------------------------------
@@ -63,13 +64,18 @@ class Renderer():
         """
 
         # Create the Jinja2 environment
-        env = jinja2.Environment(loader=jinja2.FileSystemLoader(self.j2_search_paths))
+        env = jinja2.Environment(loader=jinja2.FileSystemLoader(self.j2_search_paths),
+                                 undefined=jinja2.StrictUndefined)
 
         # Load the algorithm template
         template = env.get_template(algorithm + '.yaml')
 
         # Render the template hierarchy
-        jedi_dict_yaml = template.render(self.template_dict)
+        try:
+            jedi_dict_yaml = template.render(self.template_dict)
+        except jinja2.exceptions.UndefinedError as e:
+            print(f'Resolving templates for {algorithm} failed with the following exception: {e}')
+            sys.exit(1)
 
         # Check that everything was rendered
         jcb.abort_if('{{' in jedi_dict_yaml, f'In template_string_jinja2 ' +
