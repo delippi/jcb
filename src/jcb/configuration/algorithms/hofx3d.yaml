@@ -2,7 +2,6 @@ time window:
   begin: '{{window_begin}}'
   length: '{{window_length}}'
   bound to include: '{{ bound_to_include | default("begin", true) }}'
-forecast length: '{{window_length}}'
 
 geometry:
 {% filter indent(width=2) %}
@@ -10,16 +9,10 @@ geometry:
 {% include geometry_background_file %}
 {% endfilter %}
 
-initial condition:
+state:
 {% filter indent(width=2) %}
-{% set initial_condition_file = initial_condition|default('initial_condition', true) ~ '.yaml' %}
-{% include initial_condition_file %}
-{% endfilter %}
-
-model:
-{% set model_file = model|default('model', true) ~ '.yaml' %}
-{% filter indent(width=2) %}
-{% include model_file %}
+{% set background_file = background|default('background', true) ~ '.yaml' %}
+{% include background_file %}
 {% endfilter %}
 
 observations:

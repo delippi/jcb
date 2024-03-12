@@ -5,6 +5,7 @@ cost function:
   time window:
     begin: '{{window_begin}}'
     length: '{{window_length}}'
+    bound to include: '{{ bound_to_include | default("begin", true) }}'
 
   geometry:
 {% filter indent(width=4) %}
