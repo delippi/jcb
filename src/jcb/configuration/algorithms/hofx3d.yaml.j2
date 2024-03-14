@@ -5,13 +5,13 @@ time window:
 
 geometry:
 {% filter indent(width=2) %}
-{% set geometry_background_file = geometry_background|default('geometry_background', true) ~ '.yaml.j2' %}
+{% set geometry_background_file = geometry_background_file|default('geometry_background', true) ~ '.yaml.j2' %}
 {% include geometry_background_file %}
 {% endfilter %}
 
 state:
 {% filter indent(width=2) %}
-{% set background_file = background|default('background', true) ~ '.yaml.j2' %}
+{% set background_file = background_file|default('background', true) ~ '.yaml.j2' %}
 {% include background_file %}
 {% endfilter %}
 

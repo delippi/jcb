@@ -45,8 +45,27 @@ class Renderer():
 
         # Path with observation files if app needs obs things
         if 'app_path_observations' in self.template_dict:
-            self.j2_search_paths += [os.path.join(config_path, 'apps',
-                                             self.template_dict['app_path_observations'])]
+
+            # Observation files search path
+            obs_path = os.path.join(config_path, 'apps',
+                                    self.template_dict['app_path_observations'])
+
+            self.j2_search_paths += [obs_path]
+
+            # Get a list of all the observation files that end in .yaml.j2
+            obs_files = [f for f in os.listdir(obs_path) if
+                            os.path.isfile(os.path.join(obs_path, f)) and f.endswith('.yaml.j2')]
+
+            # Remove the .yaml.j2 extension from the observation list
+            all_observations = [f[:-8] for f in obs_files]
+
+            # If self.template_dict['observations'] is 'all_observations' or ['all_observations']
+            # or is not present then replace it with self.template_dict['all_observations']
+            if 'observations' not in self.template_dict or \
+               self.template_dict['observations'] == 'all_observations' or \
+               self.template_dict['observations'] == ['all_observations']:
+                self.template_dict['observations'] = all_observations
+
 
     # ----------------------------------------------------------------------------------------------
 

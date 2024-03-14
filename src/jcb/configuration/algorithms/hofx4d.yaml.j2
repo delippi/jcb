@@ -6,18 +6,18 @@ forecast length: '{{window_length}}'
 
 geometry:
 {% filter indent(width=2) %}
-{% set geometry_background_file = geometry_background|default('geometry_background', true) ~ '.yaml.j2' %}
+{% set geometry_background_file = geometry_background_file|default('geometry_background', true) ~ '.yaml.j2' %}
 {% include geometry_background_file %}
 {% endfilter %}
 
 initial condition:
 {% filter indent(width=2) %}
-{% set initial_condition_file = initial_condition|default('initial_condition', true) ~ '.yaml.j2' %}
+{% set initial_condition_file = initial_condition_file|default('initial_condition', true) ~ '.yaml.j2' %}
 {% include initial_condition_file %}
 {% endfilter %}
 
 model:
-{% set model_file = model|default('model', true) ~ '.yaml.j2' %}
+{% set model_file = model_file|default('model', true) ~ '.yaml.j2' %}
 {% filter indent(width=2) %}
 {% include model_file %}
 {% endfilter %}

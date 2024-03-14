@@ -1,6 +1,6 @@
 geometry:
 {% filter indent(width=2) %}
-{% set geometry_background_file = geometry_background|default('geometry_background', true) ~ '.yaml.j2' %}
+{% set geometry_background_file = geometry_background_file|default('geometry_background', true) ~ '.yaml.j2' %}
 {% include geometry_background_file %}
 {% endfilter %}
 
@@ -13,7 +13,7 @@ increment variables: {{increment_variables}}
 
 background:
 {% filter indent(width=2) %}
-{% set background_ensemble_file = background_ensemble|default('background_ensemble', true) ~ '.yaml.j2' %}
+{% set background_ensemble_file = background_ensemble_file|default('background_ensemble', true) ~ '.yaml.j2' %}
 {% include background_ensemble_file %}
 {% endfilter %}
 
@@ -101,7 +101,7 @@ driver:
 {% if driver_use_control_member %}
 control member:
 {% filter indent(width=2) %}
-{% set control_member_file = control_member|default('control_member', true) ~ '.yaml.j2' %}
+{% set control_member_file = control_member_file|default('control_member', true) ~ '.yaml.j2' %}
 {% include control_member_file %}
 {% endfilter %}
 {% endif %}
@@ -111,7 +111,7 @@ control member:
 {% if driver_save_posterior_mean or driver_save_posterior_ensemble %}
 output:
 {% filter indent(width=2) %}
-{% set posterior_output_file = posterior_output|default('posterior_output', true) ~ '.yaml.j2' %}
+{% set posterior_output_file = posterior_output_file|default('posterior_output', true) ~ '.yaml.j2' %}
 {% include posterior_output_file %}
 {% endfilter %}
 {% endif %}
@@ -121,7 +121,7 @@ output:
 {% if driver_save_prior_mean %}
 output mean prior:
 {% filter indent(width=2) %}
-{% set output_mean_prior_file = output_mean_prior|default('output_mean_prior', true) ~ '.yaml.j2' %}
+{% set output_mean_prior_file = output_mean_prior_file|default('output_mean_prior', true) ~ '.yaml.j2' %}
 {% include output_mean_prior_file %}
 {% endfilter %}
 {% endif %}
@@ -131,7 +131,7 @@ output mean prior:
 {% if driver_save_posterior_mean_increment %}
 output increment:
 {% filter indent(width=2) %}
-{% set output_increment_file = output_increment|default('output_increment', true) ~ '.yaml.j2' %}
+{% set output_increment_file = output_increment_file|default('output_increment', true) ~ '.yaml.j2' %}
 {% include output_increment_file %}
 {% endfilter %}
 {% endif %}
@@ -141,7 +141,7 @@ output increment:
 {% if driver_save_posterior_ensemble_increments %}
 output ensemble increments:
 {% filter indent(width=2) %}
-{% set output_ensemble_increments_file = output_ensemble_increments|default('output_ensemble_increments', true) ~ '.yaml.j2' %}
+{% set output_ensemble_increments_file = output_ensemble_increments_file|default('output_ensemble_increments', true) ~ '.yaml.j2' %}
 {% include output_ensemble_increments_file %}
 {% endfilter %}
 {% endif %}
@@ -151,7 +151,7 @@ output ensemble increments:
 {% if driver_save_prior_variance %}
 output variance prior:
 {% filter indent(width=2) %}
-{% set output_variance_prior_file = output_variance_prior|default('output_variance_prior', true) ~ '.yaml.j2' %}
+{% set output_variance_prior_file = output_variance_prior_file|default('output_variance_prior', true) ~ '.yaml.j2' %}
 {% include output_variance_prior_file %}
 {% endfilter %}
 {% endif %}
@@ -161,7 +161,7 @@ output variance prior:
 {% if driver_save_posterior_variance %}
 output variance posterior:
 {% filter indent(width=2) %}
-{% set output_variance_posterior_file = output_variance_posterior|default('output_variance_posterior', true) ~ '.yaml.j2' %}
+{% set output_variance_posterior_file = output_variance_posterior_file|default('output_variance_posterior', true) ~ '.yaml.j2' %}
 {% include output_variance_posterior_file %}
 {% endfilter %}
 {% endif %}
