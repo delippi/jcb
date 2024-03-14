@@ -41,13 +41,12 @@ class Renderer():
         # Path with model files if app needs model things
         if 'app_path_model' in self.template_dict:
             self.j2_search_paths += [os.path.join(config_path, 'apps',
-                                             self.template_dict['app_path_model'], 'model')]
+                                             self.template_dict['app_path_model'])]
 
         # Path with observation files if app needs obs things
         if 'app_path_observations' in self.template_dict:
             self.j2_search_paths += [os.path.join(config_path, 'apps',
-                                             self.template_dict['app_path_observations'],
-                                             'observations')]
+                                             self.template_dict['app_path_observations'])]
 
     # ----------------------------------------------------------------------------------------------
 
@@ -68,7 +67,10 @@ class Renderer():
                                  undefined=jinja2.StrictUndefined)
 
         # Load the algorithm template
-        template = env.get_template(algorithm + '.yaml')
+        template = env.get_template(algorithm + '.yaml.j2')
+
+        # Make sure algorithm is in the template dictionary
+        self.template_dict['algorithm'] = algorithm
 
         # Render the template hierarchy
         try:

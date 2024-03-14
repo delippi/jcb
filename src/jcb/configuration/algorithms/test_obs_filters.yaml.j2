@@ -5,8 +5,8 @@ time window:
 
 observations:
   observers:
-{% for observation in observations %}
+{% for observation_from_jcb in observations %}
 {% filter indent(width=2) %}
-{% include observation + '.yaml' %}
+{% include observation_from_jcb + '.yaml.j2' %}
 {% endfilter %}
 {% endfor %}

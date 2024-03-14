@@ -5,20 +5,20 @@ time window:
 
 geometry:
 {% filter indent(width=2) %}
-{% set geometry_background_file = geometry_background|default('geometry_background', true) ~ '.yaml' %}
+{% set geometry_background_file = geometry_background|default('geometry_background', true) ~ '.yaml.j2' %}
 {% include geometry_background_file %}
 {% endfilter %}
 
 state:
 {% filter indent(width=2) %}
-{% set background_file = background|default('background', true) ~ '.yaml' %}
+{% set background_file = background|default('background', true) ~ '.yaml.j2' %}
 {% include background_file %}
 {% endfilter %}
 
 observations:
   observers:
-{% for observation in observations %}
+{% for observation_from_jcb in observations %}
 {% filter indent(width=2) %}
-{% include observation + '.yaml' %}
+{% include observation_from_jcb + '.yaml.j2' %}
 {% endfilter %}
 {% endfor %}

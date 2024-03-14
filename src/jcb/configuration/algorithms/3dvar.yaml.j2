@@ -9,7 +9,7 @@ cost function:
 
   geometry:
 {% filter indent(width=4) %}
-{% set geometry_background = geometry_background|default('geometry_background', true) ~ '.yaml' %}
+{% set geometry_background = geometry_background|default('geometry_background', true) ~ '.yaml.j2' %}
 {% include geometry_background %}
 {% endfilter %}
 
@@ -17,13 +17,13 @@ cost function:
 
   background:
 {% filter indent(width=4) %}
-{% set background_file = background|default('background', true) ~ '.yaml' %}
+{% set background_file = background|default('background', true) ~ '.yaml.j2' %}
 {% include background_file %}
 {% endfilter %}
 
   background error:
 {% filter indent(width=4) %}
-{% set background_error_file = background_error|default('background_error', true) ~ '.yaml' %}
+{% set background_error_file = background_error|default('background_error', true) ~ '.yaml.j2' %}
 {% include background_error_file %}
 {% endfilter %}
 
@@ -33,15 +33,15 @@ cost function:
 {% if obs_perturbations is defined %}
     obs perturbations:
 {% filter indent(width=6) %}
-{% set obs_perturbations_file = obs_perturbations|default('obs_perturbations', true) ~ '.yaml' %}
+{% set obs_perturbations_file = obs_perturbations|default('obs_perturbations', true) ~ '.yaml.j2' %}
 {% include obs_perturbations_file %}
 {% endfilter %}
 {% endif %}
 
     observers:
-{% for observation in observations %}
+{% for observation_from_jcb in observations %}
 {% filter indent(width=4) %}
-{% include observation + '.yaml' %}
+{% include observation_from_jcb + '.yaml.j2' %}
 {% endfilter %}
 {% endfor %}
 
@@ -52,7 +52,7 @@ variational:
 # Loop over outer loops
 {% for i in range(1, number_of_outer_loops+1) %}
 {% filter indent(width=2) %}
-{% set var_outer_loop_file = '3dvar_outer_loop_' + i|string + '.yaml' %}
+{% set var_outer_loop_file = '3dvar_outer_loop_' + i|string + '.yaml.j2' %}
 {% include var_outer_loop_file %}
 {% endfilter %}
 {% endfor %}
@@ -67,22 +67,25 @@ final:
 
 # Optional final fields to write out
 {% if final_increment_to_latlon is defined %}
-{% filter indent(width=2) %}
-{% set final_increment_to_latlon_file = final_increment_to_latlon|default('final_increment_to_latlon', true) ~ '.yaml' %}
+increment to latlon:
+{% filter indent(width=4) %}
+{% set final_increment_to_latlon_file = final_increment_to_latlon|default('final_increment_to_latlon', true) ~ '.yaml.j2' %}
 {% include final_increment_to_latlon_file %}
 {% endfilter %}
 {% endif %}
 
 {% if final_analysis_to_latlon is defined %}
-{% filter indent(width=2) %}
-{% set final_analysis_to_latlon_file = final_analysis_to_latlon|default('final_analysis_to_latlon', true) ~ '.yaml' %}
+analysis to latlon:
+{% filter indent(width=4) %}
+{% set final_analysis_to_latlon_file = final_analysis_to_latlon|default('final_analysis_to_latlon', true) ~ '.yaml.j2' %}
 {% include final_analysis_to_latlon_file %}
 {% endfilter %}
 {% endif %}
 
 {% if final_increment is defined %}
-{% filter indent(width=2) %}
-{% set final_increment_file = final_increment|default('final_increment', true) ~ '.yaml' %}
+increment:
+{% filter indent(width=4) %}
+{% set final_increment_file = final_increment|default('final_increment', true) ~ '.yaml.j2' %}
 {% include final_increment_file %}
 {% endfilter %}
 {% endif %}
@@ -90,6 +93,6 @@ final:
 # Optionally write out the final analysis
 {% if output is defined %}
 output:
-{% set output_file = output|default('output', true) ~ '.yaml' %}
+{% set output_file = output|default('output', true) ~ '.yaml.j2' %}
 {% include output_file %}
 {% endif %}
