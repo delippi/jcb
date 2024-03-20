@@ -25,7 +25,9 @@ model:
 observations:
   observers:
 {% for observation_from_jcb in observations %}
+{% if use_observer(observation_from_jcb) %}
 {% filter indent(width=2) %}
 {% include observation_from_jcb + '.yaml.j2' %}
 {% endfilter %}
+{% endif %}
 {% endfor %}
