@@ -1,12 +1,16 @@
 # --------------------------------------------------------------------------------------------------
 
+
 import copy
 from datetime import datetime
+
 import jcb
 import pytest
 import yaml
 
+
 # --------------------------------------------------------------------------------------------------
+
 
 # YAML File for testing
 
@@ -71,28 +75,34 @@ chronicles:
 # Read the YAML file into a dictionary
 satellite_chronicle = yaml.safe_load(config_file)
 
+
 # --------------------------------------------------------------------------------------------------
+
 
 def test_window_before_chronicles():
 
     window_begin = datetime.fromisoformat("2009-04-15T00:00:00")
     window_final = datetime.fromisoformat("2009-04-15T06:00:00")
 
-    act, sim, vars = jcb.process_satellite_chronicles(window_begin, window_final, satellite_chronicle)
+    act, sim, vars = jcb.process_satellite_chronicles(window_begin, window_final,
+                                                      satellite_chronicle)
 
     assert act == [1, 1, 1]
     assert sim == [1, 2, 3]
     assert vars['err0']['values'] == [0.5, 0.5, 0.5]
     assert vars['x1']['values'] == [1.5, 1.5, 1.5]
 
+
 # --------------------------------------------------------------------------------------------------
+
 
 def test_window_after_chronicles():
 
     window_begin = datetime.fromisoformat("2010-01-01T00:00:00")
     window_final = datetime.fromisoformat("2010-01-01T06:00:00")
 
-    act, sim, vars = jcb.process_satellite_chronicles(window_begin, window_final, satellite_chronicle)
+    act, sim, vars = jcb.process_satellite_chronicles(window_begin, window_final,
+                                                      satellite_chronicle)
 
     assert act == [-1, 1, 1]
     assert sim == [2, 3, 4]
@@ -100,49 +110,60 @@ def test_window_after_chronicles():
     assert vars['err0']['values'] == [0.5, 0.6, 1.2]
     assert vars['x1']['values'] == [1.5, 1.5, 2.01]
 
+
 # --------------------------------------------------------------------------------------------------
+
 
 def test_window_straddles_chronicle():
 
     window_begin = datetime.fromisoformat("2009-04-30T00:00:00")
     window_final = datetime.fromisoformat("2009-05-02T00:00:00")
 
-    act, sim, vars = jcb.process_satellite_chronicles(window_begin, window_final, satellite_chronicle)
+    act, sim, vars = jcb.process_satellite_chronicles(window_begin, window_final,
+                                                      satellite_chronicle)
 
     assert act == [-1, -1, 1]
     assert sim == [1, 2, 3]
     assert vars['err0']['values'] == [0.5, 0.5, 0.5]
     assert vars['x1']['values'] == [1.5, 1.5, 1.5]
 
+
 # --------------------------------------------------------------------------------------------------
+
 
 def test_remove_simulated_channel():
 
     window_begin = datetime.fromisoformat("2009-05-09T00:00:00")
     window_final = datetime.fromisoformat("2009-05-11T00:00:00")
 
-    act, sim, vars = jcb.process_satellite_chronicles(window_begin, window_final, satellite_chronicle)
+    act, sim, vars = jcb.process_satellite_chronicles(window_begin, window_final,
+                                                      satellite_chronicle)
 
     assert act == [-1, 1]
     assert sim == [2, 3]
     assert vars['err0']['values'] == [0.5, 0.5]
     assert vars['x1']['values'] == [1.5, 1.5]
 
+
 # --------------------------------------------------------------------------------------------------
+
 
 def test_add_simulated_channel_and_activate():
 
     window_begin = datetime.fromisoformat("2009-05-14T21:00:00")
     window_final = datetime.fromisoformat("2009-05-15T06:00:00")
 
-    act, sim, vars = jcb.process_satellite_chronicles(window_begin, window_final, satellite_chronicle)
+    act, sim, vars = jcb.process_satellite_chronicles(window_begin, window_final,
+                                                      satellite_chronicle)
 
     assert act == [-1, 1, 1]
     assert sim == [2, 3, 4]
     assert vars['err0']['values'] == [0.5, 0.5, 1.01]
     assert vars['x1']['values'] == [1.5, 1.5, 2.01]
 
+
 # --------------------------------------------------------------------------------------------------
+
 
 def test_no_chronicles():
 
@@ -160,7 +181,9 @@ def test_no_chronicles():
     assert vars['err0']['values'] == [0.5, 0.5, 0.5]
     assert vars['x1']['values'] == [1.5, 1.5, 1.5]
 
+
 # --------------------------------------------------------------------------------------------------
+
 
 def test_no_channel_dep_variables():
 
@@ -169,14 +192,14 @@ def test_no_channel_dep_variables():
     del no_variables['channel_dependent_variables']
 
     # Remove if the action type is adjust_channel_dependent_variables
+    action_type = 'adjust_channel_dependent_variables'
     no_variables['chronicles'] = [chronicle for chronicle in no_variables['chronicles'] if
-                                  chronicle['action']['type'] !=
-                                  'adjust_channel_dependent_variables']
+                                  chronicle['action']['type'] != action_type]
 
     # Loop over actions and remove channel_dependent_variables
     for chronicle in no_variables['chronicles']:
-       if 'channel_dependent_variables' in chronicle['action']:
-           del chronicle['action']['channel_dependent_variables']
+        if 'channel_dependent_variables' in chronicle['action']:
+            del chronicle['action']['channel_dependent_variables']
 
     window_begin = datetime.fromisoformat("2009-04-30T00:00:00")
     window_final = datetime.fromisoformat("2009-05-02T00:00:00")
@@ -186,10 +209,13 @@ def test_no_channel_dep_variables():
     assert act == [-1, -1, 1]
     assert sim == [1, 2, 3]
 
+
 # --------------------------------------------------------------------------------------------------
+
 
 # Main entry point
 if __name__ == "__main__":
     pytest.main()
+
 
 # --------------------------------------------------------------------------------------------------

@@ -1,5 +1,6 @@
 # --------------------------------------------------------------------------------------------------
 
+
 def parse_channels(channels):
 
     """Parses a string containing numbers and ranges into a list of integers.
@@ -65,10 +66,13 @@ def parse_channels(channels):
 
     return result_list
 
+
 # --------------------------------------------------------------------------------------------------
+
 
 def parse_channels_set(channels):
 
     return set(parse_channels(channels))
+
 
 # --------------------------------------------------------------------------------------------------

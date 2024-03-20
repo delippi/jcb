@@ -1,12 +1,16 @@
 # --------------------------------------------------------------------------------------------------
 
+
 from datetime import datetime
+import os
+
 import isodate
 import jcb
-import os
 import yaml
 
+
 # --------------------------------------------------------------------------------------------------
+
 
 class ObservationChronicle():
 
@@ -89,8 +93,8 @@ class ObservationChronicle():
 
             # Check that there is a chronicle for this type
             jcb.abort_if(observer not in self.chronicles,
-                         f"No chronicle found for observation type {observer}. However templates " +
-                         f"in the observation file require a chronicle as it is required by the " +
+                         f"No chronicle found for observation type {observer}. However templates "
+                         f"in the observation file require a chronicle as it is required by the "
                          f"function {caller} that is invoked in the templates.")
 
             # Get the chronicle for the observation type
@@ -101,18 +105,19 @@ class ObservationChronicle():
             if decommissioned_str:
                 decommissioned = datetime.fromisoformat(decommissioned_str)
                 jcb.abort_if(self.window_begin >= decommissioned,
-                             f"The window begin is after the decommissioned date for " +
+                             f"The window begin is after the decommissioned date for "
                              f"observation type {observer}.")
 
             # Abort if the type is not satellite
             jcb.abort_if(obs_chronicle['observer_type'] != 'satellite',
-                         f"The template function {caller} was called for observation type " +
-                         f"{observer} but the chronicle for this observation type is not " +
+                         f"The template function {caller} was called for observation type "
+                         f"{observer} but the chronicle for this observation type is not "
                          f"satellite, found {obs_chronicle['observer_type']}. ")
 
             # Process the satellite chronicle for this observer
             self.active_channels, self.simulated_channels, self.observation_errors = \
-            jcb.process_satellite_chronicles(self.window_begin, self.window_final, obs_chronicle)
+                jcb.process_satellite_chronicles(self.window_begin, self.window_final,
+                                                 obs_chronicle)
 
             # Update the last observer
             self.last_observer = observer
@@ -127,18 +132,15 @@ class ObservationChronicle():
 
     # ----------------------------------------------------------------------------------------------
 
-
     def get_satellite_simulated_channels(self, observer):
 
         return self.__process_satellite_chronicles__('get_satellite_simulated_channels', observer)
-
 
     # ----------------------------------------------------------------------------------------------
 
     def get_satellite_active_channels(self, observer):
 
         return self.__process_satellite_chronicles__('get_satellite_active_channels', observer)
-
 
     # ----------------------------------------------------------------------------------------------
 

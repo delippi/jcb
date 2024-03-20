@@ -1,10 +1,14 @@
 # --------------------------------------------------------------------------------------------------
 
+
 import copy
 from datetime import datetime
+
 import jcb
 
+
 # --------------------------------------------------------------------------------------------------
+
 
 def __remove_active_channels__(action, active_channels):
 
@@ -33,7 +37,9 @@ def __remove_active_channels__(action, active_channels):
     # Remove the active channels
     return active_channels - jcb.parse_channels_set(action['channels'])
 
+
 # --------------------------------------------------------------------------------------------------
+
 
 def __add_active_channels__(action, active_channels, simulated_channels):
 
@@ -63,7 +69,9 @@ def __add_active_channels__(action, active_channels, simulated_channels):
     # Add the active channels
     return active_channels | active_channels_to_add
 
+
 # --------------------------------------------------------------------------------------------------
+
 
 def __add_simulated_channels__(action, simulated_channels, channel_dep_variables):
 
@@ -106,7 +114,7 @@ def __add_simulated_channels__(action, simulated_channels, channel_dep_variables
         for key, value in new_cdv.items():
 
             jcb.abort_if(not len(value) == len(simulated_channels_to_add),
-                         f"The number of values provided for {key} does not match the number of " +
+                         f"The number of values provided for {key} does not match the number of "
                          f"simulated channels to add.")
 
             # Reference to the variable in the main dictionary
@@ -122,7 +130,9 @@ def __add_simulated_channels__(action, simulated_channels, channel_dep_variables
 
     return simulated_channels, channel_dep_variables
 
+
 # --------------------------------------------------------------------------------------------------
+
 
 def __remove_simulated_channels__(action, simulated_channels, channel_dep_variables):
 
@@ -169,7 +179,7 @@ def __remove_simulated_channels__(action, simulated_channels, channel_dep_variab
 
         # Abort if the new variables are of the same length as the new simulated channels
         jcb.abort_if(not len(simulated_channels_to_remove_l) == len(indices_to_remove),
-                     "There is a discrepancy in the number of simulated channels and the number " +
+                     "There is a discrepancy in the number of simulated channels and the number "
                      "of values for the channel dependent variables.")
 
         # Loop over the channel dependent variables and remove the values at the appropriate
@@ -180,7 +190,9 @@ def __remove_simulated_channels__(action, simulated_channels, channel_dep_variab
 
     return simulated_channels, channel_dep_variables
 
+
 # --------------------------------------------------------------------------------------------------
+
 
 def __adjust_channel_dependent_variables__(action, channel_dep_variables, simulated_channels):
 
@@ -199,8 +211,8 @@ def __adjust_channel_dependent_variables__(action, channel_dep_variables, simula
     """
 
     jcb.abort_if(channel_dep_variables is None,
-                    "An action to adjust channel dependent variables was found but no initial " +
-                    "channel dependent variables were present in the observation chronicle.")
+                 "An action to adjust channel dependent variables was found but no initial "
+                 "channel dependent variables were present in the observation chronicle.")
 
     # Get the channels and adjusted variables from the action dictionary
     channels = jcb.parse_channels_set(action['channels'])
@@ -212,7 +224,7 @@ def __adjust_channel_dependent_variables__(action, channel_dep_variables, simula
 
     # Abort if the adjusted is not a subset of the base
     jcb.abort_if(not cdv_adjusted.issubset(cdv_base),
-                 f"The adjusted channel dependent variables {cdv_adjusted} are not a subset " +
+                 f"The adjusted channel dependent variables {cdv_adjusted} are not a subset "
                  f"of the base channel dependent variables {cdv_base}.")
 
     # Abort if any channels are not simulated
@@ -224,18 +236,20 @@ def __adjust_channel_dependent_variables__(action, channel_dep_variables, simula
 
         # Check that the number of adjusted variables matches the number of channels
         jcb.abort_if(not len(value) == len(channels),
-                     f"The number of adjusted variables does not match the number of channels " +
+                     f"The number of adjusted variables does not match the number of channels "
                      f"for variable {key}.")
 
         for ind, channel in enumerate(channels):
             channel_dep_variables[key]['values'][list(simulated_channels).index(channel)] = \
-                                                                                          value[ind]
+                value[ind]
 
     return channel_dep_variables
 
+
 # --------------------------------------------------------------------------------------------------
 
-def apply_action(action, active_channels, simulated_channels, channel_dep_variables):
+
+def __apply_action__(action, active_channels, simulated_channels, channel_dep_variables):
 
     """
     Apply the action to the active channels, simulated channels, and channel dependent variables.
@@ -263,26 +277,26 @@ def apply_action(action, active_channels, simulated_channels, channel_dep_variab
 
     # Remove simulated channels
     if action['type'] == 'remove_simulated_channels':
-        simulated_channels, channel_dep_variables = __remove_simulated_channels__(action,
-                                                                                 simulated_channels,
-                                                                              channel_dep_variables)
+        simulated_channels, channel_dep_variables = \
+            __remove_simulated_channels__(action, simulated_channels, channel_dep_variables)
 
     # Add simulated channels
     if action['type'] == 'add_simulated_channels':
-        simulated_channels, channel_dep_variables = __add_simulated_channels__(action,
-                                                                               simulated_channels,
-                                                                              channel_dep_variables)
+        simulated_channels, channel_dep_variables = \
+            __add_simulated_channels__(action, simulated_channels, channel_dep_variables)
 
     # Adjust the channel dependent variables
     if action['type'] == 'adjust_channel_dependent_variables':
-        channel_dep_variables = __adjust_channel_dependent_variables__(action,
-                                                                       channel_dep_variables,
-                                                                       simulated_channels)
+        channel_dep_variables = \
+            __adjust_channel_dependent_variables__(action, channel_dep_variables,
+                                                   simulated_channels)
 
     # Return everything
     return active_channels, simulated_channels, channel_dep_variables
 
+
 # --------------------------------------------------------------------------------------------------
+
 
 def process_satellite_chronicles(window_begin, window_final, obs_chronicle):
 
@@ -318,7 +332,7 @@ def process_satellite_chronicles(window_begin, window_final, obs_chronicle):
     if channel_dependent_variables is not None:
         for key, value in channel_dependent_variables.items():
             jcb.abort_if(not len(value['values']) == len(simulated_channels),
-                         f"The length of the channel_dependent_variables {key} must match the " +
+                         f"The length of the channel_dependent_variables {key} must match the "
                          f"length of the simulated channels.")
 
     # Get chronicles list
@@ -367,10 +381,9 @@ def process_satellite_chronicles(window_begin, window_final, obs_chronicle):
             break
 
         # Apply the action to the active channels, simulated channels and channel dependent vars
-        active_channels, simulated_channels, channel_dependent_variables = apply_action(chronicle['action'],
-                                                                               active_channels,
-                                                                               simulated_channels,
-                                                                               channel_dependent_variables)
+        active_channels, simulated_channels, channel_dependent_variables = \
+            __apply_action__(chronicle['action'], active_channels, simulated_channels,
+                             channel_dependent_variables)
 
     # Set window extremes if they did not intersect with the chronicles
     if not window_begin_assigned:
@@ -392,7 +405,7 @@ def process_satellite_chronicles(window_begin, window_final, obs_chronicle):
     # Active channels is an array of -1 and 1. -1 if the channel is in the simulated list but
     # not the active list. 1 otherwise
     active_channels = [1 if channel in active_channels else -1 for channel in
-                        simulated_channels]
+                       simulated_channels]
 
     # For each channel dependent variable pick the maximum value
     if channel_dependent_variables:
@@ -415,5 +428,6 @@ def process_satellite_chronicles(window_begin, window_final, obs_chronicle):
                 jcb.abort("The value_across_window must be max or min.")
 
     return active_channels, simulated_channels, channel_dependent_variables
+
 
 # --------------------------------------------------------------------------------------------------
