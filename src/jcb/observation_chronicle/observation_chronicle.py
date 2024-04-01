@@ -86,7 +86,7 @@ class ObservationChronicle():
 
     # ----------------------------------------------------------------------------------------------
 
-    def __process_satellite_chronicles__(self, caller, observer):
+    def __process_satellite_chronicles__(self, caller, observer, variable=None):
 
         # Only re-process the chronicle if the observer has changed
         if self.last_observer != observer:
@@ -115,7 +115,7 @@ class ObservationChronicle():
                          f"satellite, found {obs_chronicle['observer_type']}. ")
 
             # Process the satellite chronicle for this observer
-            self.active_channels, self.simulated_channels, self.observation_errors = \
+            self.active_channels, self.simulated_channels, self.channel_dep_variables = \
                 jcb.process_satellite_chronicles(self.window_begin, self.window_final,
                                                  obs_chronicle)
 
@@ -128,7 +128,7 @@ class ObservationChronicle():
         if caller == 'get_satellite_active_channels':
             return self.active_channels
         if caller == 'get_satellite_observation_errors':
-            return self.observation_errors
+            return self.channel_dep_variables
 
     # ----------------------------------------------------------------------------------------------
 
@@ -144,9 +144,16 @@ class ObservationChronicle():
 
     # ----------------------------------------------------------------------------------------------
 
-    def get_satellite_observation_errors(self, observer):
+    def get_satellite_channel_dep_variable(self, observer, variable):
 
-        return self.__process_satellite_chronicles__('get_satellite_observation_errors', observer)
+        cdv = self.__process_satellite_chronicles__('get_satellite_observation_errors', observer)
+
+        # Abort if cdv is None
+        jcb.abort_if(cdv is None, f"Could not find channel dependent variables for observer "
+                     f"{observer} and variable.")
+
+        # Get the values for the required variable
+        return cdv[variable]['values']
 
 
 # --------------------------------------------------------------------------------------------------

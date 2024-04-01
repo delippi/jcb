@@ -3,302 +3,156 @@
 
 import copy
 from datetime import datetime
+import re
 
 import jcb
 
 
 # --------------------------------------------------------------------------------------------------
 
+# Function mapping for variable strategy
+function_map = {
+    'min': min,
+    'max': max,
+}
 
-def __remove_active_channels__(action, active_channels):
+# --------------------------------------------------------------------------------------------------
 
-    """
-    Remove active channels from the active channels list.
+def datetime_from_conf(datetime_string):
 
-    This action is non intrusive in the sense that other quantities do not need to be adjusted at
-    the same time. It only removes channels from the active list. The only condition/check is that
-    the channels to remove must already be active
+    # Strip and non-numeric characters from the string
+    datetime_string = re.sub(r'\D', '', datetime_string)
 
-    Args:
-        action (dict): The action dictionary from the observation chronicle.
-        active_channels (set): The set of active channels.
+    # A string that is less 8 characters long is not valid
+    jcb.abort_if(len(datetime_string) < 8,
+                 f"The datetime \'{datetime_string}\' is not long enough to be a valid datetime.")
 
-    Returns:
-        active_channels (set): The updated set of active channels.
-    """
+    # If length of string is less than 14 then pad with zeros
+    if len(datetime_string) < 14:
+        datetime_string += '0' * (14 - len(datetime_string))
 
-    # Get the active channels to remove from the action dictionary
-    active_channels_to_remove = jcb.parse_channels_set(action['channels'])
-
-    # Abort if any of the channels to remove are not already active
-    jcb.abort_if(not active_channels_to_remove.issubset(active_channels),
-                 "Trying to remove an active channel that is not currently active.")
-
-    # Remove the active channels
-    return active_channels - jcb.parse_channels_set(action['channels'])
+    # Convert to datetime object
+    return datetime.strptime(datetime_string, "%Y%m%d%H%M%S")
 
 
 # --------------------------------------------------------------------------------------------------
 
 
-def __add_active_channels__(action, active_channels, simulated_channels):
+def add_to_evolving_observing_system(evolving_observing_system, datetime, channel_values):
 
-    """
-    Add active channels to the active channels list.
+    # Temporary dictionary
+    temp_dict = {}
+    temp_dict['datetime'] = datetime
+    temp_dict['channel_values'] = channel_values
 
-    This action requires that the active channels being added are already simulated. It only adds
-    channels to the active list. It does not impact the simulated channels or the chanel dependent
-    variables.
-
-    Args:
-        action (dict): The action dictionary from the observation chronicle.
-        active_channels (set): The set of active channels.
-        simulated_channels (set): The set of simulated channels.
-
-    Returns:
-        active_channels (set): The updated set of active channels.
-    """
-
-    # Get the active channels to add from the action dictionary
-    active_channels_to_add = jcb.parse_channels_set(action['channels'])
-
-    # Abort if any of the channels to add are not simulated
-    jcb.abort_if(not active_channels_to_add.issubset(simulated_channels),
-                 "You cannot add an active channel that is not simulated.")
-
-    # Add the active channels
-    return active_channels | active_channels_to_add
+    # Append to the evolving observing system
+    evolving_observing_system.append(temp_dict)
 
 
 # --------------------------------------------------------------------------------------------------
 
 
-def __add_simulated_channels__(action, simulated_channels, channel_dep_variables):
-
-    """
-    Add simulated channels to the simulated channels list.
-
-    If channel dependent variables are not handled by the chronicles then this action is non
-    intrusive in the sense that other quantities do not need to be adjusted at the same time.
-    If channel dependent variables are handled by the chronicles then new values must be provided
-    for each variable.
-
-    Args:
-        action (dict): The action dictionary from the observation chronicle.
-        simulated_channels (set): The set of simulated channels.
-        channel_dep_variables (dict): Dictionary of lists of channel dependent variables.
-
-    Returns:
-        simulated_channels (set): The updated set of simulated channels.
-        channel_dep_variables (dict): The updated dictionary of channel dependent variables.
-    """
-
-    # Get the simulated channels to add from the action dictionary
-    simulated_channels_to_add = jcb.parse_channels_set(action['channels'])
-
-    # Add the simulated channels
-    simulated_channels = simulated_channels | simulated_channels_to_add
-
-    # If the channel dependant variables are being handled by the chronicles then new values must
-    # be provided foreach new channel
-    if channel_dep_variables:
-
-        # Convert to lists
-        simulated_channels_l = list(simulated_channels)
-        simulated_channels_to_add_l = list(simulated_channels_to_add)
-
-        # Get the new channel dependent variables
-        new_cdv = action.get('channel_dependent_variables')
-
-        # Abort if the new variables are of the same length as number of simulated channels to add
-        for key, value in new_cdv.items():
-
-            jcb.abort_if(not len(value) == len(simulated_channels_to_add),
-                         f"The number of values provided for {key} does not match the number of "
-                         f"simulated channels to add.")
-
-            # Reference to the variable in the main dictionary
-            cdv_values = channel_dep_variables[key]['values']
-
-            # Insert the new values at the appropriate position
-            for ind, channel in enumerate(simulated_channels_l):
-
-                # If the channel is in the new channels then add the new variable at the correct
-                # position
-                if channel in simulated_channels_to_add_l:
-                    cdv_values.insert(ind, value[simulated_channels_to_add_l.index(channel)])
-
-    return simulated_channels, channel_dep_variables
-
-
-# --------------------------------------------------------------------------------------------------
-
-
-def __remove_simulated_channels__(action, simulated_channels, channel_dep_variables):
-
-    """
-    Remove simulated channels from the simulated channels list.
-
-    If channel dependent variables are not handled by the chronicles then this action is non
-    intrusive in the sense that other quantities do not need to be adjusted at the same time.
-    If channel dependent variables are handled by the chronicles then they must be removed as well.
-
-    Args:
-        action (dict): The action dictionary from the observation chronicle.
-        simulated_channels (set): The set of simulated channels.
-        channel_dep_variables (dict): Dictionary of lists of channel dependent variables.
-
-    Returns:
-        simulated_channels (set): The updated set of simulated channels.
-        channel_dep_variables (dict): The updated dictionary of channel dependent variables.
-    """
-
-    # Save incoming simulated channels as list
-    simulated_channels_l = list(simulated_channels)
-
-    # Get the simulated channels to remove from the action dictionary
-    simulated_channels_to_remove = jcb.parse_channels_set(action['channels'])
-
-    # Abort if any of the channels to remove are not already simulated
-    jcb.abort_if(not simulated_channels_to_remove.issubset(simulated_channels),
-                 "Trying to remove a simulated channel that is not currently simulated.")
-
-    # Remove the simulated channels
-    simulated_channels = simulated_channels - simulated_channels_to_remove
-
-    # If the channel dependant variables are being handled by the chronicles then they must be
-    # removed as well
-    if channel_dep_variables:
-
-        # Convert to lists
-        simulated_channels_to_remove_l = list(simulated_channels_to_remove)
-
-        # Gather the indices of the simulated_channels_l that were removed
-        indices_to_remove = [simulated_channels_l.index(channel) for channel in
-                             simulated_channels_to_remove_l]
-
-        # Abort if the new variables are of the same length as the new simulated channels
-        jcb.abort_if(not len(simulated_channels_to_remove_l) == len(indices_to_remove),
-                     "There is a discrepancy in the number of simulated channels and the number "
-                     "of values for the channel dependent variables.")
-
-        # Loop over the channel dependent variables and remove the values at the appropriate
-        # position
-        for value in channel_dep_variables.values():
-            for ind in sorted(indices_to_remove, reverse=True):
-                del value['values'][ind]
-
-    return simulated_channels, channel_dep_variables
-
-
-# --------------------------------------------------------------------------------------------------
-
-
-def __adjust_channel_dependent_variables__(action, channel_dep_variables, simulated_channels):
-
-    """
-    Adjust the channel dependent variables.
-
-    This action is non intrusive in the sense that other quantities do not need to be adjusted at
-    the same time. It only adjusts the channel dependent variables.
-
-    Args:
-        action (dict): The action dictionary from the observation chronicle.
-        channel_dep_variables (dict): Dictionary of lists of channel dependent variables.
-
-    Returns:
-        channel_dep_variables (dict): The updated dictionary of channel dependent variables.
-    """
-
-    jcb.abort_if(channel_dep_variables is None,
-                 "An action to adjust channel dependent variables was found but no initial "
-                 "channel dependent variables were present in the observation chronicle.")
-
-    # Get the channels and adjusted variables from the action dictionary
-    channels = jcb.parse_channels_set(action['channels'])
-    adjusted_variables = action['channel_dependent_variables']
-
-    # Create list of channel dependent variables
-    cdv_base = set(channel_dep_variables.keys())
-    cdv_adjusted = set(adjusted_variables.keys())
-
-    # Abort if the adjusted is not a subset of the base
-    jcb.abort_if(not cdv_adjusted.issubset(cdv_base),
-                 f"The adjusted channel dependent variables {cdv_adjusted} are not a subset "
-                 f"of the base channel dependent variables {cdv_base}.")
-
-    # Abort if any channels are not simulated
-    jcb.abort_if(not channels.issubset(simulated_channels),
-                 "The channels to adjust are not simulated.")
-
-    # Loop over the variables to be adjusted
-    for key, value in adjusted_variables.items():
-
-        # Check that the number of adjusted variables matches the number of channels
-        jcb.abort_if(not len(value) == len(channels),
-                     f"The number of adjusted variables does not match the number of channels "
-                     f"for variable {key}.")
-
-        for ind, channel in enumerate(channels):
-            channel_dep_variables[key]['values'][list(simulated_channels).index(channel)] = \
-                value[ind]
-
-    return channel_dep_variables
-
-
-# --------------------------------------------------------------------------------------------------
-
-
-def __apply_action__(action, active_channels, simulated_channels, channel_dep_variables):
-
-    """
-    Apply the action to the active channels, simulated channels, and channel dependent variables.
-
-    Args:
-        action (dict): The action dictionary from the observation chronicle.
-        active_channels (set): The set of active channels.
-        simulated_channels (set): The set of simulated channels.
-        channel_dep_variables (dict): Dictionary of list of channel dependent variables.
-
-    Returns:
-        active_channels (set): The updated set of active channels.
-        simulated_channels (set): The updated set of simulated channels.
-        channel_dep_variables (dict): The updated dictionary of list of channel dependent
-        variables.
-    """
-
-    # Remove active channels
-    if action['type'] == 'remove_active_channels':
-        active_channels = __remove_active_channels__(action, active_channels)
-
-    # Add active channels
-    if action['type'] == 'add_active_channels':
-        active_channels = __add_active_channels__(action, active_channels, simulated_channels)
-
-    # Remove simulated channels
-    if action['type'] == 'remove_simulated_channels':
-        simulated_channels, channel_dep_variables = \
-            __remove_simulated_channels__(action, simulated_channels, channel_dep_variables)
-
-    # Add simulated channels
-    if action['type'] == 'add_simulated_channels':
-        simulated_channels, channel_dep_variables = \
-            __add_simulated_channels__(action, simulated_channels, channel_dep_variables)
-
-    # Adjust the channel dependent variables
-    if action['type'] == 'adjust_channel_dependent_variables':
-        channel_dep_variables = \
-            __adjust_channel_dependent_variables__(action, channel_dep_variables,
-                                                   simulated_channels)
-
-    # Return everything
-    return active_channels, simulated_channels, channel_dep_variables
-
-
-# --------------------------------------------------------------------------------------------------
-
-
-def process_satellite_chronicles(window_begin, window_final, obs_chronicle):
+def process_satellite_chronicles(window_begin, window_final, chronicle):
+
+    # Commissioned time for this platform
+    # -----------------------------------
+    commissioned = datetime_from_conf(chronicle['commissioned'])
+
+    # Initial channel values
+    # ----------------------
+    channel_values = chronicle.get('channel_values')
+
+    # Variables that are described in the chronicle
+    # ---------------------------------------------
+    channel_variables = chronicle.get('channel_variables').keys()
+    num_variables = len(channel_variables)
+
+    # Abort if the first variable is not simulated
+    jcb.abort_if(channel_variables[0] != 'simulated',
+                 "The first variable in the channel_variables must be \'simulated\'.")
+
+   # Convert the list of channel_variables_strategies to actual function references
+    channel_variables_func = [function_map[op] for op in chronicle['channel_variables'].values()]
+
+    # For each channel (keys of channel_values) check values matches number of variables
+    for channel, values in channel_values.items():
+        jcb.abort_if(not len(values) == num_variables,
+                     f"The number of values for each channel {channel} must match the number of "
+                      "variables.")
+
+    # Dictionary to hold the observing system as it evolves through the chronicles
+    # ----------------------------------------------------------------------------
+    evolving_observing_system = []
+
+    # Store chronicle at the initial commissioned date
+    add_to_evolving_observing_system(evolving_observing_system, commissioned, channel_values)
+
+    # Get chronicles list
+    # -------------------
+    chronicles = chronicle.get('chronicles', [])
+
+    # Validation checks on the chronicles
+    # -----------------------------------
+
+    # Check chronicles for chronological order and that they are unique
+    action_dates = [datetime_from_conf(chronicle['action_date']) for chronicle in chronicles]
+    jcb.abort_if(action_dates != sorted(action_dates),
+                 "The chronicles are not in chronological order.")
+    jcb.abort_if(len(action_dates) != len(set(action_dates)),
+                 "The chronicles are not unique. Ensure no two chronicles have the same date.")
+
+    # Loop through the chronicles and at each time there will be a complete set of channel_values
+    # with the values specified by the chronicle.
+    # -------------------------------------------------------------------------------------------
+    for action_date, chronicle in zip(action_dates, chronicles):
+
+        # If chronicle has channel_values key then simply update those channels
+        if 'channel_values' in chronicle:
+
+            # Check that the number of values provided for each channel matched the variables
+            for channel, values in chronicle['channel_values'].items():
+                jcb.abort_if(not len(values) == num_variables,
+                             f"The number of values for each channel {channel} in chronicle with "
+                             f"action date {chronicle['action_date']} does not have correct ."
+                             "number of variables.")
+
+            for channel, values in chronicle['channel_values'].items():
+                channel_values[channel] = values
+
+        # If chronicle has key adjust_variable_for_all_channels then update those variables for all
+        # channels
+        if 'adjust_variable_for_all_channels' in chronicle:
+            variables = chronicle['adjust_variable_for_all_channels']['variables']
+            values = chronicle['adjust_variable_for_all_channels']['values']
+            for variable, value in zip(variables, values):
+                for channel in channel_values.keys():
+                    channel_values[channel][channel_variables.index(variable)] = value
+
+        # If the chronicle has key revert_to_previous_chronicle
+        if 'revert_to_previous_date_time' in chronicle:
+            previous_datetime = datetime_from_conf(chronicle['revert_to_previous_date_time'])
+
+            # Assert that previous datetime is equal to or after the commissioned date
+            jcb.abort_if(previous_datetime < commissioned,
+                         "The previous datetime is before the commissioned date.")
+
+            # Find the nearest previous datetime in the action_dates list (without going over)
+            index_of_previous = next((ind for ind, date in enumerate(action_dates) if date <
+                                      previous_datetime), None)
+
+            # Update the channel values to the previous chronicle (using the evolving observing system)
+            channel_values = evolving_observing_system[index_of_previous]['channel_values']
+
+
+        # Add the values after the action to the evolving observing system
+        add_to_evolving_observing_system(evolving_observing_system, action_date, channel_values)
+
+
+    # Now that the entire chronicle has been processed we can return the values to be used for
+    # the window. If the window beginning and ending are both between the same action dates then the
+    # values will be set to the earlier values. If the window straddles and action date then the
+    # values have to be determined using the min/max strategy that the user wishes and has chosen
+    # in the variables.
 
     # Sanity check on the expected input values
     # -----------------------------------------
@@ -312,122 +166,31 @@ def process_satellite_chronicles(window_begin, window_final, obs_chronicle):
     jcb.abort_if(window_final <= window_begin,
                  "The window final must be after the window begin.")
 
-    # Extract initial values
-    # ----------------------
-    # Parse initial channel lists (for simplicity these are sets)
-    active_channels = jcb.parse_channels_set(obs_chronicle['active_channels'])
-    simulated_channels = jcb.parse_channels_set(obs_chronicle['simulated_channels'])
+    # Find the index of the nearest actions_date that is before or equal to window begin
+    index_of_begin = next((ind for ind, date in enumerate(action_dates) if date <= window_begin),
+                          None)
 
-    # Optionally the chronicle may describe come channel dependent variables (dict of lists)
-    channel_dependent_variables = copy.deepcopy(obs_chronicle.get('channel_dependent_variables',
-                                                                  None))
+    # Find the index of the nearest actions_date that is before or equal to window end
+    index_of_final = next((ind for ind, date in enumerate(action_dates) if date <= window_final),
+                          None)
 
-    # Check on elements of initial lists
-    # ----------------------------------
-    # The elements of the active channels must be a subset of the simulated channels
-    jcb.abort_if(not active_channels.issubset(simulated_channels),
-                 "The active channels must be a subset of the simulated channels.")
+    # Extract actual values at times before window and begin and final
+    channel_values_a = copy.deepcopy(evolving_observing_system[index_of_begin]['channel_values'])
+    channel_values_b = copy.deepcopy(evolving_observing_system[index_of_final]['channel_values'])
 
-    # If channel dependent variables are provided they should match the length of simulated channels
-    if channel_dependent_variables is not None:
-        for key, value in channel_dependent_variables.items():
-            jcb.abort_if(not len(value['values']) == len(simulated_channels),
-                         f"The length of the channel_dependent_variables {key} must match the "
-                         f"length of the simulated channels.")
+    # Loop over channels
+    for channel in channel_values_a.keys():
 
-    # Get chronicles list
-    # -------------------
-    chronicles = obs_chronicle.get('chronicles', [])
+        # Index loop over variables
+        for variable_index in range(num_variables):
 
-    # Set flags to record when status at window extremes is set
-    window_begin_assigned = False
-    window_final_assigned = False
+            # Use strategy to determine value for the window
+            channel_values_a[channel][variable_index] = \
+                channel_variables_func[variable_index](channel_values_a[channel][variable_index],
+                                                       channel_values_b[channel][variable_index])
 
-    # Loop over chronicles up to (and including) the beginning of the window
-    for ind, chronicle in enumerate(chronicles):
-
-        # Save the date of the current chronicle
-        action_date = chronicle.get('action_date')
-        # If action date from the conf is a string convert to datetime
-        if isinstance(action_date, str):
-            action_date = datetime.fromisoformat(action_date)
-
-        # Ensure the correct ordering of chronicles
-        # -----------------------------------------
-        if ind == 0:
-            # If first chronicle save the action time
-            previous_action_time = action_date
-        else:
-            # For later chronicles check the order
-            jcb.abort_if(previous_action_time > action_date,
-                         "The chronicles are not in chronological order.")
-
-        # If the action_date is after the window beginning then save the current state
-        if action_date > window_begin:
-            active_channels_begin = active_channels
-            simulated_channels_begin = simulated_channels
-            if channel_dependent_variables:
-                channel_dependent_variables_begin = copy.deepcopy(channel_dependent_variables)
-            window_begin_assigned = True
-
-        # If action date is after the window final then save and break
-        if action_date > window_final:
-            active_channels_final = active_channels
-            simulated_channels_final = simulated_channels
-            if channel_dependent_variables:
-                channel_dependent_variables_final = copy.deepcopy(channel_dependent_variables)
-            window_final_assigned = True
-            # Any chronicles after the window are not relevant
-            break
-
-        # Apply the action to the active channels, simulated channels and channel dependent vars
-        active_channels, simulated_channels, channel_dependent_variables = \
-            __apply_action__(chronicle['action'], active_channels, simulated_channels,
-                             channel_dependent_variables)
-
-    # Set window extremes if they did not intersect with the chronicles
-    if not window_begin_assigned:
-        active_channels_begin = active_channels
-        simulated_channels_begin = simulated_channels
-        if channel_dependent_variables:
-            channel_dependent_variables_begin = copy.deepcopy(channel_dependent_variables)
-    if not window_final_assigned:
-        active_channels_final = active_channels
-        simulated_channels_final = simulated_channels
-        if channel_dependent_variables:
-            channel_dependent_variables_final = copy.deepcopy(channel_dependent_variables)
-
-    # Only simulate / assimilate channels that are active at both the beginning and end of the
-    # window. Convert back to lists.
-    active_channels = list(active_channels_begin & active_channels_final)
-    simulated_channels = list(simulated_channels_begin & simulated_channels_final)
-
-    # Active channels is an array of -1 and 1. -1 if the channel is in the simulated list but
-    # not the active list. 1 otherwise
-    active_channels = [1 if channel in active_channels else -1 for channel in
-                       simulated_channels]
-
-    # For each channel dependent variable pick the maximum value
-    if channel_dependent_variables:
-        for variable_name, variable_dict in channel_dependent_variables.items():
-
-            # Can take the maximum or minimum value across the window
-            method = variable_dict.get('value_across_window', 'max').lower()
-
-            # Values and begin and final
-            values_begin = channel_dependent_variables_begin[variable_name]['values']
-            values_final = channel_dependent_variables_final[variable_name]['values']
-
-            if method == 'max':
-                value['values'] = [max(values_begin[ind], values_final[ind])
-                                   for ind in range(len(value['values']))]
-            elif method == 'min':
-                value['values'] = [min(values_begin[ind], values_final[ind])
-                                   for ind in range(len(value['values']))]
-            else:
-                jcb.abort("The value_across_window must be max or min.")
-
-    return active_channels, simulated_channels, channel_dependent_variables
+    # Return the channel values
+    return channel_values_a
 
 
 # --------------------------------------------------------------------------------------------------

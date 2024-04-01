@@ -24,6 +24,15 @@ def return_true(obs_type):
 # --------------------------------------------------------------------------------------------------
 
 
+def get_nested_dict(nested_dict, keys):
+    for key in keys:
+        nested_dict = nested_dict[key]  # Navigate deeper into the dictionary
+    return nested_dict
+
+
+# --------------------------------------------------------------------------------------------------
+
+
 class Renderer():
 
     """
@@ -52,7 +61,14 @@ class Renderer():
         config_path = os.path.join(os.path.dirname(__file__), 'configuration')
 
         # Path with the algorithm files (top level templates)
-        self.j2_search_paths = [os.path.join(config_path, 'algorithms')]
+        algorithm_path = os.path.join(config_path, 'algorithms')
+
+        # Load observer_components from the algorithm path
+        observer_components = os.path.join(algorithm_path, 'observer_components.yaml')
+        with open(observer_components, 'r') as file:
+            self.observer_components = yaml.safe_load(file)
+
+        self.j2_search_paths = [algorithm_path]
 
         # Path with model files if app needs model things
         app_path_model = self.template_dict.get('app_path_model')
@@ -137,9 +153,9 @@ class Renderer():
                 # Add global functions for retrieving the list of active channels
                 self.env.globals['get_satellite_active_channels'] = \
                     self.obs_chron.get_satellite_active_channels
-                # Add global functions for retrieving the satellite observation errors
-                self.env.globals['get_satellite_observation_errors'] = \
-                    self.obs_chron.get_satellite_observation_errors
+                # Add global functions for retrieving the satellite channel dependant variables
+                self.env.globals['get_satellite_channel_dep_variable'] = \
+                    self.obs_chron.get_satellite_channel_dep_variable
 
     # ----------------------------------------------------------------------------------------------
 
@@ -180,6 +196,29 @@ class Renderer():
                      f'{jedi_dict_yaml}')
 
         # print(' ')
+
+        # Convert string form of the dictionary to a dictionary
+        jedi_dict = yaml.safe_load(jedi_dict_yaml)
+
+        # Clean up the observers part of the dictionary if necessary. Should only have the
+        # components that the algorithm allows for.
+        # --------------------------------------------------------------------------------
+
+        # Only happens if the algorithm exists in the observer_components
+        if 'algorithm' in self.observer_components:
+            # Get the observer components for this algorithm
+            observer_location = self.observer_components['algorithm']['observer_nesting']
+            observer_components = self.observer_components['algorithm']['components']
+
+            # Pointer to observers (mutable list so should not copy here)
+            observers_dict = get_nested_dict(jedi_dict, observer_location)
+
+            # Loop over the observers and remove the non allowably components
+            for observer_dict in observers_dict:
+                for key in observer_dict:
+                    # Remove key if not in the observer components
+                    if key not in observer_components:
+                        del observer_dict[key]
 
         # Convert the rendered string to a dictionary
         return yaml.safe_load(jedi_dict_yaml)
