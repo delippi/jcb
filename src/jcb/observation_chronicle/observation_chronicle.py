@@ -143,17 +143,9 @@ class ObservationChronicle():
                      f"Could not find '{variable_name}' in the variables for observer {observer}.")
         var_idx = ch_variables.index('simulated')
 
-        # Set variable to return
-        sat_simulated = []
-        sat_variable = []
-
-        # Loop over keys (channels) of the values
-        for channel, values in ch_values.items():
-
-            # Only compile values for channels included in the integration
-            if values[sim_idx]:
-                sat_simulated.append(channel)
-                sat_variable.append(values[var_idx])
+        # Set variables
+        sat_simulated = [channel for channel, values in ch_values.items() if values[sim_idx]]
+        sat_variable = [values[var_idx] for _, values in ch_values.items() if values[sim_idx]]
 
         # Get the values for the required variable
         if variable_name == 'simulated':
