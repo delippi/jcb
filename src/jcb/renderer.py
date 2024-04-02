@@ -147,15 +147,8 @@ class Renderer():
                 # Add global function for determining the use of a particular observer.
                 self.env.globals['use_observer'] = self.obs_chron.use_observer
 
-                # Add global functions for retrieving the list of all simulated channels
-                self.env.globals['get_satellite_simulated_channels'] = \
-                    self.obs_chron.get_satellite_simulated_channels
-                # Add global functions for retrieving the list of active channels
-                self.env.globals['get_satellite_active_channels'] = \
-                    self.obs_chron.get_satellite_active_channels
                 # Add global functions for retrieving the satellite channel dependant variables
-                self.env.globals['get_satellite_channel_dep_variable'] = \
-                    self.obs_chron.get_satellite_channel_dep_variable
+                self.env.globals['get_satellite_variable'] = self.obs_chron.get_satellite_variable
 
     # ----------------------------------------------------------------------------------------------
 

@@ -23,8 +23,7 @@ def test_jcb():
 
     jedi_dict_1 = jcb.render(dictionary_of_templates)
 
-    with open('jedi_dict_1.yaml', 'w') as f:
-        yaml.dump(jedi_dict_1, f, default_flow_style=False, sort_keys=False)
+    print(yaml.dump(jedi_dict_1, default_flow_style=False, sort_keys=False))
 
     # Style 2 for call: renderer for multiple algorithms
     # --------------------------------------------------
@@ -36,10 +35,8 @@ def test_jcb():
     jedi_dict_2_a = jcb_obj.render('hofx4d')
     jedi_dict_2_b = jcb_obj.render('hofx4d')  # Same algo until we add more
 
-    with open('jedi_dict_2_a.yaml', 'w') as f:
-        yaml.dump(jedi_dict_2_a, f, default_flow_style=False, sort_keys=False)
-    with open('jedi_dict_2_b.yaml', 'w') as f:
-        yaml.dump(jedi_dict_2_b, f, default_flow_style=False, sort_keys=False)
+    print(yaml.dump(jedi_dict_2_a, default_flow_style=False, sort_keys=False))
+    print(yaml.dump(jedi_dict_2_b, default_flow_style=False, sort_keys=False))
 
 
 # -------------------------------------------------------------------------------------------------

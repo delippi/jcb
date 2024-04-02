@@ -60,25 +60,28 @@ class ObservationChronicle():
         obs_chronicle = self.chronicles[observer]
 
         # Commissioned date
-        commissioned_str = obs_chronicle.get('commissioned')
-        commissioned = datetime.fromisoformat(commissioned_str)
+        commissioned = jcb.datetime_from_conf(obs_chronicle.get('commissioned'))
 
         # Decommissioned date (if present)
         decommissioned_str = obs_chronicle.get('decommissioned', None)
         if decommissioned_str:
-            decommissioned = datetime.fromisoformat(decommissioned_str)
+            decommissioned = jcb.datetime_from_conf(decommissioned_str)
 
         # First check that the commissioned period overlaps the window
         # ------------------------------------------------------------
 
-        # If the widow final is before the commissioned date then return False
-        if self.window_final <= commissioned:
+        # If the window does not completely overlap the commissioned period then return False
+        if self.window_begin < commissioned:
+            return False
+        if decommissioned_str and self.window_final > decommissioned:
             return False
 
-        # If the instrument is decommissioned and the window begin is after the decommissioned
-        # date then return False
-        if decommissioned_str and self.window_begin >= decommissioned:
-            return False
+        # Observation type dependent checks
+        if obs_chronicle['observer_type'] == 'satellite':
+
+            # If there are no simulated channels then return False
+            if not self.get_satellite_variable(observer, 'simulated'):
+                return False
 
         # If made it through all the checks then the data is active and should be used
         # ----------------------------------------------------------------------------
@@ -86,7 +89,7 @@ class ObservationChronicle():
 
     # ----------------------------------------------------------------------------------------------
 
-    def __process_satellite_chronicles__(self, caller, observer, variable=None):
+    def __process_satellite__(self, observer):
 
         # Only re-process the chronicle if the observer has changed
         if self.last_observer != observer:
@@ -94,8 +97,7 @@ class ObservationChronicle():
             # Check that there is a chronicle for this type
             jcb.abort_if(observer not in self.chronicles,
                          f"No chronicle found for observation type {observer}. However templates "
-                         f"in the observation file require a chronicle as it is required by the "
-                         f"function {caller} that is invoked in the templates.")
+                         f"in the observation file require a chronicle.")
 
             # Get the chronicle for the observation type
             obs_chronicle = self.chronicles[observer]
@@ -110,50 +112,54 @@ class ObservationChronicle():
 
             # Abort if the type is not satellite
             jcb.abort_if(obs_chronicle['observer_type'] != 'satellite',
-                         f"The template function {caller} was called for observation type "
-                         f"{observer} but the chronicle for this observation type is not "
-                         f"satellite, found {obs_chronicle['observer_type']}. ")
+                         f"Only satellite observation types are supported. The observation type "
+                         f"{observer} is listed as: {obs_chronicle['observer_type']}.")
 
             # Process the satellite chronicle for this observer
-            self.active_channels, self.simulated_channels, self.channel_dep_variables = \
-                jcb.process_satellite_chronicles(self.window_begin, self.window_final,
+            self.sat_variables = \
+                jcb.process_satellite_chronicles(observer, self.window_begin, self.window_final,
                                                  obs_chronicle)
 
             # Update the last observer
             self.last_observer = observer
 
         # Return the requested data
-        if caller == 'get_satellite_simulated_channels':
-            return self.simulated_channels
-        if caller == 'get_satellite_active_channels':
-            return self.active_channels
-        if caller == 'get_satellite_observation_errors':
-            return self.channel_dep_variables
+        return self.sat_variables
 
     # ----------------------------------------------------------------------------------------------
 
-    def get_satellite_simulated_channels(self, observer):
+    def get_satellite_variable(self, observer, variable_name):
 
-        return self.__process_satellite_chronicles__('get_satellite_simulated_channels', observer)
+        # Get all the variables for the satellites
+        ch_variables, ch_values = self.__process_satellite__(observer)
 
-    # ----------------------------------------------------------------------------------------------
+        # Assert that 'simulated' is in the variables and get the index
+        jcb.abort_if('simulated' not in ch_variables,
+                     f"Could not find 'simulated' in the variables for observer {observer}.")
+        sim_idx = ch_variables.index('simulated')
 
-    def get_satellite_active_channels(self, observer):
+        # Assert that variable_name is in the variables and get the index
+        jcb.abort_if(variable_name not in ch_variables,
+                     f"Could not find '{variable_name}' in the variables for observer {observer}.")
+        var_idx = ch_variables.index('simulated')
 
-        return self.__process_satellite_chronicles__('get_satellite_active_channels', observer)
+        # Set variable to return
+        sat_simulated = []
+        sat_variable = []
 
-    # ----------------------------------------------------------------------------------------------
+        # Loop over keys (channels) of the values
+        for channel, values in ch_values.items():
 
-    def get_satellite_channel_dep_variable(self, observer, variable):
-
-        cdv = self.__process_satellite_chronicles__('get_satellite_observation_errors', observer)
-
-        # Abort if cdv is None
-        jcb.abort_if(cdv is None, f"Could not find channel dependent variables for observer "
-                     f"{observer} and variable.")
+            # Only compile values for channels included in the integration
+            if values[sim_idx]:
+                sat_simulated.append(channel)
+                sat_variable.append(values[var_idx])
 
         # Get the values for the required variable
-        return cdv[variable]['values']
+        if variable_name == 'simulated':
+            return sat_simulated
+        else:
+            return sat_variable
 
 
 # --------------------------------------------------------------------------------------------------
