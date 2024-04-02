@@ -21,7 +21,7 @@
 
 ### Repository status:
 
-[![JCB Tests](https://github.com/NOAA-EMC/jcb/actions/workflows/basic_testing.yaml/badge.svg)](https://github.com/NOAA-EMC/jcb/actions/workflows/basic_testing.yaml)
+[![JCB Tests](https://github.com/NOAA-EMC/jcb/actions/workflows/basic_testing.yaml/badge.svg?branch=develop)](https://github.com/NOAA-EMC/jcb/actions/workflows/basic_testing.yaml)
 
 ### Installation
 
