@@ -14,7 +14,7 @@ from .observation_chronicle.observation_chronicle import ObservationChronicle
 from .observation_chronicle.satellite_chronicle import process_satellite_chronicles
 from .renderer import render as render
 from .renderer import Renderer as Renderer
-from .utilities.config_parsing import datetime_from_conf
+from .utilities.config_parsing import datetime_from_conf, duration_from_conf
 from .utilities.parse_channels import parse_channels, parse_channels_set
 from .utilities.trapping import abort, abort_if
 
@@ -25,6 +25,7 @@ __all__ = [
     'ObservationChronicle',
     'process_satellite_chronicles',
     'datetime_from_conf',
+    'duration_from_conf',
     'parse_channels',
     'parse_channels_set',
     'abort_if',

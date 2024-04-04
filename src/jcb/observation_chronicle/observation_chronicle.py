@@ -4,7 +4,6 @@
 from datetime import datetime
 import os
 
-import isodate
 import jcb
 import yaml
 
@@ -25,7 +24,7 @@ class ObservationChronicle():
         self.window_begin = datetime.strptime(window_begin, '%Y-%m-%dT%H:%M:%SZ')
 
         # Add window_length to window_begin
-        self.window_final = self.window_begin + isodate.parse_duration(window_length)
+        self.window_final = self.window_begin + jcb.duration_from_conf(window_length)
 
         # Save the most recent observer that was passed to the class. This can be used to avoid
         # re-precessing the chronicles if the same observer is used multiple times.

@@ -206,7 +206,7 @@ class Renderer():
             # Pointer to observers (mutable list so should not copy here)
             observers_dict = get_nested_dict(jedi_dict, observer_location)
 
-            # Loop over the observers and remove the non allowably components
+            # Loop over the observers and remove the non allowable components
             for observer_dict in observers_dict:
                 for key in observer_dict:
                     # Remove key if not in the observer components
