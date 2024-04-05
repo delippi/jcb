@@ -146,11 +146,12 @@ class ObservationChronicle():
         sat_simulated = [channel for channel, values in ch_values.items() if values[sim_idx]]
         sat_variable = [values[var_idx] for _, values in ch_values.items() if values[sim_idx]]
 
-        # Get the values for the required variable
+        # Do not return lists, let the YAML developer decide if the variable should be a list or
+        # not with use of [] in the YAML. Instead return a comma separated string
         if variable_name == 'simulated':
-            return sat_simulated
+            return ", ".join(str(element) for element in sat_simulated)
         else:
-            return sat_variable
+            return ", ".join(str(element) for element in sat_variable)
 
 
 # --------------------------------------------------------------------------------------------------
