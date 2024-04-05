@@ -196,22 +196,25 @@ class Renderer():
         # Clean up the observers part of the dictionary if necessary. Should only have the
         # components that the algorithm allows for.
         # --------------------------------------------------------------------------------
-
-        # Only happens if the algorithm exists in the observer_components
-        if 'algorithm' in self.observer_components:
+        if algorithm in self.observer_components:
             # Get the observer components for this algorithm
-            observer_location = self.observer_components['algorithm']['observer_nesting']
-            observer_components = self.observer_components['algorithm']['components']
+            observer_location = self.observer_components[algorithm]['observer_nesting']
+            allowable_keys = self.observer_components[algorithm]['components']
 
             # Pointer to observers (mutable list so should not copy here)
-            observers_dict = get_nested_dict(jedi_dict, observer_location)
+            observers = get_nested_dict(jedi_dict, observer_location)
 
             # Loop over the observers and remove the non allowable components
-            for observer_dict in observers_dict:
-                for key in observer_dict:
-                    # Remove key if not in the observer components
-                    if key not in observer_components:
-                        del observer_dict[key]
+            for observer in observers['observers']:
+
+                observer_keys = observer.keys()
+
+                # Find the observer components that are not allowable
+                keys_to_remove = [key for key in observer_keys if key not in allowable_keys]
+
+                # Remove the non allowable components
+                for key in keys_to_remove:
+                    del observer[key]
 
         # Convert the rendered string to a dictionary
         return yaml.safe_load(jedi_dict_yaml)
