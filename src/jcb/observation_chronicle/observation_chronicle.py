@@ -115,7 +115,7 @@ class ObservationChronicle():
                          f"{observer} is listed as: {obs_chronicle['observer_type']}.")
 
             # Process the satellite chronicle for this observer
-            self.sat_variables = \
+            self.sat_variables, self.sat_values = \
                 jcb.process_satellite_chronicles(observer, self.window_begin, self.window_final,
                                                  obs_chronicle)
 
@@ -123,28 +123,28 @@ class ObservationChronicle():
             self.last_observer = observer
 
         # Return the requested data
-        return self.sat_variables
+        return self.sat_variables, self.sat_values
 
     # ----------------------------------------------------------------------------------------------
 
     def get_satellite_variable(self, observer, variable_name):
 
         # Get all the variables for the satellites
-        ch_variables, ch_values = self.__process_satellite__(observer)
+        sat_variables, sat_values = self.__process_satellite__(observer)
 
         # Assert that 'simulated' is in the variables and get the index
-        jcb.abort_if('simulated' not in ch_variables,
+        jcb.abort_if('simulated' not in sat_variables,
                      f"Could not find 'simulated' in the variables for observer {observer}.")
-        sim_idx = ch_variables.index('simulated')
+        sim_idx = sat_variables.index('simulated')
 
         # Assert that variable_name is in the variables and get the index
-        jcb.abort_if(variable_name not in ch_variables,
+        jcb.abort_if(variable_name not in sat_variables,
                      f"Could not find '{variable_name}' in the variables for observer {observer}.")
-        var_idx = ch_variables.index('simulated')
+        var_idx = sat_variables.index(variable_name)
 
         # Set variables
-        sat_simulated = [channel for channel, values in ch_values.items() if values[sim_idx]]
-        sat_variable = [values[var_idx] for _, values in ch_values.items() if values[sim_idx]]
+        sat_simulated = [channel for channel, values in sat_values.items() if values[sim_idx]]
+        sat_variable = [values[var_idx] for _, values in sat_values.items() if values[sim_idx]]
 
         # Do not return lists, let the YAML developer decide if the variable should be a list or
         # not with use of [] in the YAML. Instead return a comma separated string
