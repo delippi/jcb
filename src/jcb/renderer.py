@@ -217,7 +217,7 @@ class Renderer():
                     del observer[key]
 
         # Convert the rendered string to a dictionary
-        return yaml.safe_load(jedi_dict_yaml)
+        return jedi_dict
 
 
 # --------------------------------------------------------------------------------------------------
