@@ -30,7 +30,7 @@ cost function:
   observations:
 
 # There is a conditional here in case this 3DVar YAML is being used for EDA
-{% if obs_perturbations is defined %}
+{% if obs_perturbations_file is defined %}
     obs perturbations:
 {% filter indent(width=6) %}
 {% set obs_perturbations_file = obs_perturbations_file|default('obs_perturbations', true) ~ '.yaml.j2' %}
@@ -68,7 +68,7 @@ final:
 {% endif %}
 
 # Optional final fields to write out
-{% if final_increment_to_latlon is defined %}
+{% if final_increment_to_latlon_file is defined %}
 increment to latlon:
 {% filter indent(width=4) %}
 {% set final_increment_to_latlon_file = final_increment_to_latlon_file|default('final_increment_to_latlon', true) ~ '.yaml.j2' %}
@@ -76,7 +76,7 @@ increment to latlon:
 {% endfilter %}
 {% endif %}
 
-{% if final_analysis_to_latlon is defined %}
+{% if final_analysis_to_latlon_file is defined %}
 analysis to latlon:
 {% filter indent(width=4) %}
 {% set final_analysis_to_latlon_file = final_analysis_to_latlon_file|default('final_analysis_to_latlon', true) ~ '.yaml.j2' %}
@@ -84,7 +84,7 @@ analysis to latlon:
 {% endfilter %}
 {% endif %}
 
-{% if final_increment is defined %}
+{% if final_increment_file is defined %}
 increment:
 {% filter indent(width=4) %}
 {% set final_increment_file = final_increment_file|default('final_increment', true) ~ '.yaml.j2' %}
@@ -93,7 +93,7 @@ increment:
 {% endif %}
 
 # Optionally write out the final analysis
-{% if output is defined %}
+{% if output_file is defined %}
 output:
 {% set output_file = output_file|default('output', true) ~ '.yaml.j2' %}
 {% include output_file %}
