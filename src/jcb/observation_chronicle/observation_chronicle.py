@@ -33,12 +33,16 @@ class ObservationChronicle():
         # Read all the chronicles into a dictionary where the key is the observation type and the
         # value is the chronicle dictionary
 
+        # Create dictionary of chronicles
+        self.chronicles = {}
+
+        # If path does not exist there are not chronicles for this configuration
+        if not os.path.exists(chronicle_path):
+            return
+
         # List all the yaml files in the observation chronicle path
         chronicle_files = [f for f in os.listdir(chronicle_path)
                            if f.endswith('.yaml')]
-
-        # Create dictionary of chronicles
-        self.chronicles = {}
 
         # Read each chronicle file
         for chronicle_file in chronicle_files:
