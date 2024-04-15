@@ -5,3 +5,4 @@
 [submodule "src/jcb/configuration/algorithms"]
 	path = src/jcb/configuration/algorithms
 	url = https://github.com/noaa-emc/jcb-algorithms
+	branch = develop
