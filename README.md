@@ -26,7 +26,7 @@
 ### Installation
 
 ``` shell
-git clone https://github.com/noaa-emc/jcb
+git clone --recurse-submodules https://github.com/noaa-emc/jcb
 cd jcb
 pip install --prefix=/path/to/where/you/want/installed .
 ```
