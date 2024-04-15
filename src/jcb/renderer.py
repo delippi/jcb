@@ -61,7 +61,10 @@ class Renderer():
         config_path = os.path.join(os.path.dirname(__file__), 'configuration')
 
         # Path with the algorithm files (top level templates)
-        algorithm_path = os.path.join(config_path, 'algorithms')
+        algorithm_path_default = os.path.join(config_path, 'algorithms')
+
+        # Check for user provided algorithm path
+        algorithm_path = self.template_dict.get('algorithm_path', algorithm_path_default)
 
         # Load observer_components from the algorithm path
         observer_components = os.path.join(algorithm_path, 'observer_components.yaml')
