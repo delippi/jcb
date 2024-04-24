@@ -73,6 +73,16 @@ class Renderer():
 
         self.j2_search_paths = [algorithm_path]
 
+        # Check to see if there is an app_path_algorithm in the template dictionary
+        app_path_algorithm = self.template_dict.get('app_path_algorithm')
+        if app_path_algorithm:
+
+            # Check if app_path_algorithm is an absolute path
+            if os.path.isabs(app_path_algorithm):
+                self.j2_search_paths += [app_path_algorithm]
+            else:
+                self.j2_search_paths += [os.path.join(config_path, 'apps', app_path_algorithm)]
+
         # Path with model files if app needs model things
         app_path_model = self.template_dict.get('app_path_model')
         if app_path_model:
