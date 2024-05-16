@@ -108,7 +108,7 @@ class ObservationChronicle():
             # Abort if the window begin is after the decommissioned date
             decommissioned_str = obs_chronicle.get('decommissioned', None)
             if decommissioned_str:
-                decommissioned = datetime.fromisoformat(decommissioned_str)
+                decommissioned = jcb.datetime_from_conf(decommissioned_str)
                 jcb.abort_if(self.window_begin >= decommissioned,
                              f"The window begin is after the decommissioned date for "
                              f"observation type {observer}.")
