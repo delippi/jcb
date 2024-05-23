@@ -218,7 +218,7 @@ class Renderer():
             observers = get_nested_dict(jedi_dict, observer_location)
 
             # Loop over the observers and remove the non allowable components
-            for observer in observers['observers']:
+            for observer in observers:
 
                 observer_keys = observer.keys()
 

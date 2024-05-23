@@ -23,7 +23,7 @@ def jcb_driver():
 
       or
 
-      jcb render -i dictionary_of_templates.yaml -o jedi_dict.yaml
+      jcb render dictionary_of_templates.yaml jedi_dict.yaml
 
     """
     pass
