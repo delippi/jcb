@@ -8,7 +8,7 @@ import yaml
 
 
 @click.group()
-@click.version_option(version=jcb.__version__, prog_name="Jedi Configuration Builder (jcb)")
+@click.version_option(version=jcb.version(), prog_name="Jedi Configuration Builder (jcb)")
 def jcb_driver():
     """
     Welcome to the Jedi Configuration Builder (jcb).

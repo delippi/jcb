@@ -46,22 +46,22 @@ npz_anl: 127                                        # {{ npz_anl }}
 fv3jedi_files_path: DATA/fv3jedi                    # {{ DATA }}/fv3jedi
 
 # Background
-background_path: DATA/bkg                           # {{ DATA }}/bkg
-background_ensemble_path: "DATA/ens/mem%mem%"       # {{ DATA }}/ens/mem%mem%
+atm_background_path: DATA/bkg                           # {{ DATA }}/bkg
+atm_background_ensemble_path: "DATA/ens/mem%mem%"       # {{ DATA }}/ens/mem%mem%
 
 # Background error
-bump_data_directory: DATA/berror                    # {{ DATA }}/berror
+atm_bump_data_directory: DATA/berror                    # {{ DATA }}/berror
 gsibec_path: DATA/berror                            # {{ DATA }}/berror
-number_ensemble_members: 3                          # {{ NMEM_ENS }}
+atm_number_ensemble_members: 3                          # {{ NMEM_ENS }}
 layout_gsib_x: 2                                    # {{ layout_gsib_x }}
 layout_gsib_y: 2                                    # {{ layout_gsib_y }}
 
 # Forecasting
 forecast_length: PT6H                               # '{{ ATM_WINDOW_LENGTH }}'
-forecast_timestep: PT1H                             # {{ BKG_TSTEP }}
+atm_forecast_timestep: PT1H                             # {{ BKG_TSTEP }}
 
 # Write final increment on Guassian grid in variational
-final_increment_prefix: "./anl/atminc."
+atm_final_increment_prefix: "./anl/atminc."
 
 
 # Observation things
