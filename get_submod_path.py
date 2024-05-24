@@ -1,10 +1,13 @@
 # --------------------------------------------------------------------------------------------------
 
+
 import configparser
 import os
 import sys
 
+
 # --------------------------------------------------------------------------------------------------
+
 
 def parse_submodules_return_local_path():
 
@@ -25,14 +28,19 @@ def parse_submodules_return_local_path():
 
     return submodules
 
+
 # --------------------------------------------------------------------------------------------------
+
 
 if __name__ == "__main__":
 
+    # Get the repo path from the argument
     submodule_repo = sys.argv[1].lower()
+
+    # Parse git submodule file into a dictionary
     submodules_dict = parse_submodules_return_local_path()
 
-    # Loop over submodules_dict
+    # Loop over submodules_dict and print when found
     for submodule_name, submodule in submodules_dict.items():
         if submodule['url'] == submodule_repo:
             repo_found = True
@@ -42,5 +50,6 @@ if __name__ == "__main__":
 
     # Fail if we got to here
     exit(1)
+
 
 # --------------------------------------------------------------------------------------------------
