@@ -34,7 +34,6 @@ if __name__ == "__main__":
 
     # Loop over submodules_dict
     for submodule_name, submodule in submodules_dict.items():
-        print(submodule['url'], submodule_repo)
         if submodule['url'] == submodule_repo:
             repo_found = True
             # Export environment variable for path to repo
