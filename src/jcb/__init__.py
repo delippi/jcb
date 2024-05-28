@@ -9,6 +9,7 @@ from .renderer import render as render
 from .renderer import Renderer as Renderer
 from .utilities.config_parsing import datetime_from_conf, duration_from_conf
 from .utilities.parse_channels import parse_channels, parse_channels_set
+from .utilities.testing import get_apps, apps_directory_to_dictionary, render_app_with_test_config
 from .utilities.trapping import abort, abort_if
 
 
@@ -37,6 +38,9 @@ __all__ = [
     'abort',
     'version',
     'get_jcb_path',
+    'get_apps',
+    'apps_directory_to_dictionary',
+    'render_app_with_test_config',
 ]
 
 

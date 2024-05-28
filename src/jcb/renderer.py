@@ -87,6 +87,10 @@ class Renderer():
         app_path_model = self.template_dict.get('app_path_model')
         if app_path_model:
 
+            # Take the last element of the path and set this to the model_component in the
+            # dictionary. The path might end in a slash so split on / and take the last element.
+            self.template_dict['model_component'] = app_path_model.split('/')[-1] + '_'
+
             # Check if app_path_model is an absolute path
             if os.path.isabs(app_path_model):
                 self.j2_search_paths += [app_path_model]
