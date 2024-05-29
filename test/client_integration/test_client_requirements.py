@@ -1,10 +1,11 @@
 # --------------------------------------------------------------------------------------------------
 
+
 import os
+import re
 
 import jcb
 import pytest
-import re
 
 
 # --------------------------------------------------------------------------------------------------
@@ -191,7 +192,6 @@ def test_check_for_yaml_anchors():
                         line = line.replace(" ", "")
                         assert ':&' not in line, f"{message} Anchor found in {file}. Line: {line}"
                         assert ':*' not in line, f"{message} Anchor found in {file}. Line: {line}"
-
 
         # Now check for the use of anchors in the observation directory
         # -------------------------------------------------------------

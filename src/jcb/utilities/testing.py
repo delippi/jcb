@@ -56,21 +56,21 @@ def apps_directory_to_dictionary():
 
 def render_app_with_test_config(app_test_config):
 
-        # Style 1 for call: all in one API
-        # --------------------------------
-        jedi_dict_1 = jcb.render(app_test_config)
+    # Style 1 for call: all in one API
+    # --------------------------------
+    jedi_dict_1 = jcb.render(app_test_config)
 
-        # Style 2 for call: renderer for multiple algorithms
-        # --------------------------------------------------
-        # Algorithm does not need to be in the dictionary of templates
-        algorithm = app_test_config['algorithm']
-        del app_test_config['algorithm']
+    # Style 2 for call: renderer for multiple algorithms
+    # --------------------------------------------------
+    # Algorithm does not need to be in the dictionary of templates
+    algorithm = app_test_config['algorithm']
+    del app_test_config['algorithm']
 
-        jcb_obj = jcb.Renderer(app_test_config)
-        jedi_dict_2 = jcb_obj.render(algorithm)
+    jcb_obj = jcb.Renderer(app_test_config)
+    jedi_dict_2 = jcb_obj.render(algorithm)
 
-        # Assert that the two outputs match one another
-        assert jedi_dict_1 == jedi_dict_2
+    # Assert that the two outputs match one another
+    assert jedi_dict_1 == jedi_dict_2
 
 
 # --------------------------------------------------------------------------------------------------

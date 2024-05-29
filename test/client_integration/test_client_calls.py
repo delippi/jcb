@@ -5,10 +5,10 @@ import copy
 import glob
 import multiprocessing
 import os
-import yaml
 
 import jcb
 import pytest
+import yaml
 
 
 # --------------------------------------------------------------------------------------------------
