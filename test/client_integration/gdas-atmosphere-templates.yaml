@@ -28,7 +28,6 @@ background_error_file: atmosphere_background_error_hybrid_gsibec_bump
 window_begin: '2024-02-01T00:00:00Z'
 window_length: PT6H
 bound_to_include: begin
-cost_type: 3DVar
 minimizer: DRPCG
 final_diagnostics_departures: anlmob
 analysis_variables: [ua,va,t,ps,sphum,ice_wat,liq_wat,o3mr]
