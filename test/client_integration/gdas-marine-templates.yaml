@@ -1,10 +1,11 @@
 # This part is for testing only. Normally this would just show algorithm: <algorithm>
 # -----------------------------------------------------------------------------------
 supported_algorithms:
-#- 3dvar
-#- hofx3d
+- 3dvar
+- hofx3d
 - hofx4d
-#- 3dfgat
+- 3dfgat
+#- local_ensemble_da
 
 
 # Search path for model and obs for JCB (relative for the submodule, or can be absolute)
