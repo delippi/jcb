@@ -1,0 +1,4 @@
+gdas:
+  git_url: 'https://github.com/noaa-emc/jcb-gdas.git'
+  default_branch: develop
+
