@@ -29,8 +29,8 @@ def branch_exists_on_remote(git_ls_remote_command):
 
     # Return status of branch existence
     try:
-        subprocess.check_output(git_ls_remote_command)
-        return True
+        output = subprocess.check_output(git_ls_remote_command)
+        return bool(output)
     except subprocess.CalledProcessError:
         return False
 
@@ -52,6 +52,7 @@ def update_default_branches(jcb_apps):
 
         # Check if the default branch exists
         git_ls_remote_command = ['git', 'ls-remote', '--heads', app_conf['git_url'], jcb_branch]
+        print(f"Checking if branch {jcb_branch} exists for {app} with command: {' '.join(git_ls_remote_command)}")
 
         # If the branch exists, update the default branch
         if branch_exists_on_remote(git_ls_remote_command):
