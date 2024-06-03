@@ -68,6 +68,7 @@ jobs:
       - name: Install the code
         run: |
           cd $GITHUB_WORKSPACE
+          python jcb_init.py
           pip install .[testing]
 
       - name: Run unit tests

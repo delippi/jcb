@@ -9,6 +9,42 @@ import yaml
 # --------------------------------------------------------------------------------------------------
 
 
+red = '\033[91m'
+green = '\033[92m'
+end = '\033[0m'
+
+
+# --------------------------------------------------------------------------------------------------
+
+
+def write_message(message, center=False):
+
+    # Max line length
+    max_line_length = 100
+
+    # Break the message into a list of lines max 100 characters but do not cut a word in half
+    lines = []
+    while len(message) > max_line_length:
+        last_space = message[:max_line_length].rfind(' ')
+        lines.append(message[:last_space])
+        message = message[last_space+1:]
+    lines.append(message)
+
+    # If center is true center the lines
+    if center:
+        lines = [line.center(max_line_length) for line in lines]
+
+    # Remove any lines that are empty
+    lines = [line for line in lines if line != '']
+
+    # Print the lines
+    for line in lines:
+        print(line)
+
+
+# --------------------------------------------------------------------------------------------------
+
+
 def get_jcb_branch():
 
     # Command to get git branch
@@ -38,7 +74,7 @@ def branch_exists_on_remote(git_ls_remote_command):
 # --------------------------------------------------------------------------------------------------
 
 
-def update_default_branches(jcb_apps):
+def update_default_refs(jcb_apps):
 
     # Get the current branch of the jcb repo
     jcb_branch = get_jcb_branch()
@@ -47,16 +83,23 @@ def update_default_branches(jcb_apps):
     if jcb_branch is None or jcb_branch == 'develop':
         return
 
+    # Write message
+    write_message(f'The branch for jcb is {red + jcb_branch + end}. Looking for this branch '
+                  'for the clients.')
+
     # Loop over jcb_apps and update default branch
     for app, app_conf in jcb_apps.items():
 
         # Check if the default branch exists
         git_ls_remote_command = ['git', 'ls-remote', '--heads', app_conf['git_url'], jcb_branch]
-        print(f"Checking if branch {jcb_branch} exists for {app} with command: {' '.join(git_ls_remote_command)}")
 
         # If the branch exists, update the default branch
+        found = red + 'not found' + end
         if branch_exists_on_remote(git_ls_remote_command):
-            app_conf['default_branch'] = jcb_branch
+            found = green + 'found' + end
+            app_conf['git_ref'] = jcb_branch
+        write_message(f'  Branch {jcb_branch} {found} for {app}')
+    write_message(' ')
 
 
 # --------------------------------------------------------------------------------------------------
@@ -67,22 +110,43 @@ def clone_or_update_repos(jcb_apps):
     # Loop over jcb_apps and clone or update the repositories
     for app, app_conf in jcb_apps.items():
 
+        target_path = app_conf['target_path']
+
         # Check if the target path exists
-        if not os.path.exists(app_conf['target_path']):
+        if not os.path.exists(target_path):
 
             # Clone command
-            git_clone = ['git', 'clone', app_conf['git_url'], '-b', app_conf['default_branch'],
-                         app_conf['target_path']]
+            git_clone = ['git', 'clone', app_conf['git_url'], '-b', app_conf['git_ref'],
+                         target_path]
 
             # Clone the repository
-            print(f"Cloning {app} with command: {' '.join(git_clone)}")
-            subprocess.run(git_clone)
+            command_string = ' '.join(git_clone)
+            write_message(f'Cloning {app} with command: {command_string}')
+            subprocess.run(git_clone, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+        else:
+
+            # Print warning that repo is already cloned
+            write_message(f'Repository {app} already cloned at {target_path}. Update '
+                          'manually or remove to clone again using this script.')
+
+        write_message(' ')
+
 
 
 # --------------------------------------------------------------------------------------------------
 
 
 if __name__ == "__main__":
+
+    # Write initial message
+    write_message(' ')
+    write_message('-'*100)
+    write_message(' ')
+    write_message('Running jcb client initialization script', True)
+    write_message(' ')
+    write_message('This script will clone any of the JCB clients that are registered in '
+                  'jcb_apps.yaml.\n')
 
     # Get the path of this file
     file_path = os.path.dirname(os.path.realpath(__file__))
@@ -92,7 +156,7 @@ if __name__ == "__main__":
         jcb_apps = yaml.load(file, Loader=yaml.FullLoader)
 
     # Required keys
-    required_keys = ['git_url', 'default_branch']
+    required_keys = ['git_url', 'git_ref']
 
     # Set the path to where the applications will be cloned
     jcb_config_path = os.path.join(file_path, 'src', 'jcb', 'configuration')
@@ -101,21 +165,25 @@ if __name__ == "__main__":
     for app, app_conf in jcb_apps.items():
         for key in required_keys:
             if key not in app_conf:
-                raise Exception(f"Key '{key}' not found in jcb_apps.yaml")
+                raise Exception(f'Key \'{key}\' not found in jcb_apps.yaml')
         app_conf['target_path'] = os.path.join(jcb_config_path, 'apps', app)
 
     # Add jcb-algorithms to the dictionary
     jcb_apps['algorithms'] = {
         'git_url': 'https://github.com/noaa-emc/jcb-algorithms.git',
-        'default_branch': 'develop',
+        'git_ref': 'develop',
         'target_path': os.path.join(jcb_config_path, 'algorithms')
     }
 
     # Get the current branch of the jcb repo
-    update_default_branches(jcb_apps)
+    update_default_refs(jcb_apps)
 
     # Clone or update the repositories
     clone_or_update_repos(jcb_apps)
+
+    write_message('Initialization of jcb clients is complete')
+    write_message(' ')
+    write_message('-'*100)
 
 
 # --------------------------------------------------------------------------------------------------
