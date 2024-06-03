@@ -9,8 +9,8 @@ Clients have to be registered with jcb in a few steps:
 
 ```yaml
 <app>:
-  git_url: 'https://github.com/<org>/<repo>.git'
-  git_ref: develop # Branch, tag or hash
+  git_url: <org>/<repo>  # Do not append with .git
+  git_ref: develop       # Branch, tag or hash
 ```
 
 - Update `jcb/.gitignore` with `src/jcb/configuration/apps/<app>/`, where `<app>` is the dictionary key used in `jcb_apps.yaml`.

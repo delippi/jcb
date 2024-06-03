@@ -1,14 +1,19 @@
+#!/usr/bin/env python
+
+
 # --------------------------------------------------------------------------------------------------
 
 
 import os
 import subprocess
+import typing
 import yaml
 
 
 # --------------------------------------------------------------------------------------------------
 
 
+bold = '\033[1m'
 red = '\033[91m'
 green = '\033[92m'
 end = '\033[0m'
@@ -17,7 +22,14 @@ end = '\033[0m'
 # --------------------------------------------------------------------------------------------------
 
 
-def write_message(message, center=False):
+def write_message(message: str, center: bool = False) -> None:
+
+    """Write a message, optionally centered, and print it line by line.
+
+    Args:
+        message (str): The message to be written and printed.
+        center (bool): If True, center each line of the message. Defaults to False.
+    """
 
     # Max line length
     max_line_length = 100
@@ -45,7 +57,18 @@ def write_message(message, center=False):
 # --------------------------------------------------------------------------------------------------
 
 
-def get_jcb_branch():
+def get_jcb_branch() -> typing.Optional[str]:
+
+    """Get the current Git branch name.
+
+    Executes a Git command to retrieve the current branch name.
+    Returns the branch name unless it is 'HEAD' or 'develop',
+    in which case it returns None.
+
+    Returns:
+        Optional[str]: The current Git branch name, or None if the branch
+        is 'HEAD', 'develop', or if an error occurs.
+    """
 
     # Command to get git branch
     git_branch_command = ['git', 'rev-parse', '--abbrev-ref', 'HEAD']
@@ -53,7 +76,7 @@ def get_jcb_branch():
     # Return current branch
     try:
         branch = subprocess.check_output(git_branch_command).strip().decode('utf-8')
-        return branch if branch != 'HEAD' else None
+        return branch if branch != 'HEAD' and branch != 'develop' else None
     except subprocess.CalledProcessError:
         return None
 
@@ -61,7 +84,19 @@ def get_jcb_branch():
 # --------------------------------------------------------------------------------------------------
 
 
-def branch_exists_on_remote(git_ls_remote_command):
+def branch_exists_on_remote(git_ls_remote_command: typing.List[str]) -> bool:
+
+    """Check if a branch exists on the remote repository.
+
+    Executes a Git command to check for the existence of a branch
+    on the remote repository.
+
+    Args:
+        git_ls_remote_command (List[str]): The Git command to list remote branches.
+
+    Returns:
+        bool: True if the branch exists on the remote repository, False otherwise.
+    """
 
     # Return status of branch existence
     try:
@@ -74,13 +109,26 @@ def branch_exists_on_remote(git_ls_remote_command):
 # --------------------------------------------------------------------------------------------------
 
 
-def update_default_refs(jcb_apps):
+def update_default_refs(jcb_apps: typing.Dict[str, typing.Dict[str, typing.Any]]) -> None:
+
+    """Update the default Git references for jcb apps based on the current branch.
+
+    Gets the current branch of the jcb repo and updates the default branch
+    for each app in jcb_apps if the branch exists on the remote.
+
+    Args:
+        jcb_apps (Dict[str, Dict[str, Any]]): A dictionary containing app configurations,
+        where the key is the app name and the value is a dictionary with configuration details.
+
+    Returns:
+        None
+    """
 
     # Get the current branch of the jcb repo
     jcb_branch = get_jcb_branch()
 
-    # Nothing to do if the default branch is None or develop
-    if jcb_branch is None or jcb_branch == 'develop':
+    # Nothing to do unless there is a branch  called something other than develop
+    if jcb_branch is None:
         return
 
     # Write message
@@ -91,7 +139,8 @@ def update_default_refs(jcb_apps):
     for app, app_conf in jcb_apps.items():
 
         # Check if the default branch exists
-        git_ls_remote_command = ['git', 'ls-remote', '--heads', app_conf['git_url'], jcb_branch]
+        full_url = f'https://github.com/{app_conf["git_url"]}.git'
+        git_ls_remote_command = ['git', 'ls-remote', '--heads', full_url, jcb_branch]
 
         # If the branch exists, update the default branch
         found = red + 'not found' + end
@@ -105,7 +154,20 @@ def update_default_refs(jcb_apps):
 # --------------------------------------------------------------------------------------------------
 
 
-def clone_or_update_repos(jcb_apps):
+def clone_or_update_repos(jcb_apps: typing.Dict[str, typing.Dict[str, typing.Any]]) -> None:
+
+    """Clone or update repositories based on the provided configuration.
+
+    Loops over jcb_apps and clones the repositories if the target path does not exist.
+    If the repository already exists at the target path, it prints a warning message.
+
+    Args:
+        jcb_apps (Dict[str, Dict[str, Any]]): A dictionary containing app configurations,
+        where the key is the app name and the value is a dictionary with configuration details.
+
+    Returns:
+        None
+    """
 
     # Loop over jcb_apps and clone or update the repositories
     for app, app_conf in jcb_apps.items():
@@ -116,7 +178,8 @@ def clone_or_update_repos(jcb_apps):
         if not os.path.exists(target_path):
 
             # Clone command
-            git_clone = ['git', 'clone', app_conf['git_url'], '-b', app_conf['git_ref'],
+            full_url = f'https://github.com/{app_conf["git_url"]}.git'
+            git_clone = ['git', 'clone', full_url, '-b', app_conf['git_ref'],
                          target_path]
 
             # Clone the repository
@@ -133,7 +196,6 @@ def clone_or_update_repos(jcb_apps):
         write_message(' ')
 
 
-
 # --------------------------------------------------------------------------------------------------
 
 
@@ -143,16 +205,16 @@ if __name__ == "__main__":
     write_message(' ')
     write_message('-'*100)
     write_message(' ')
-    write_message('Running jcb client initialization script', True)
+    write_message(bold + 'Running jcb client initialization script' + end, True)
     write_message(' ')
-    write_message('This script will clone any of the JCB clients that are registered in '
+    write_message('This script will clone any of the jcb clients that are registered in '
                   'jcb_apps.yaml.\n')
 
     # Get the path of this file
     file_path = os.path.dirname(os.path.realpath(__file__))
 
     # Open the jcb_apps.yaml file
-    with open(os.path.join(file_path, 'jcb_apps.yaml')) as file:
+    with open(os.path.join(file_path, 'jcb_clients.yaml')) as file:
         jcb_apps = yaml.load(file, Loader=yaml.FullLoader)
 
     # Required keys
@@ -170,12 +232,12 @@ if __name__ == "__main__":
 
     # Add jcb-algorithms to the dictionary
     jcb_apps['algorithms'] = {
-        'git_url': 'https://github.com/noaa-emc/jcb-algorithms.git',
+        'git_url': 'noaa-emc/jcb-algorithms',
         'git_ref': 'develop',
         'target_path': os.path.join(jcb_config_path, 'algorithms')
     }
 
-    # Get the current branch of the jcb repo
+    # Update the default refs for the clients
     update_default_refs(jcb_apps)
 
     # Clone or update the repositories
