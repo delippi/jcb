@@ -27,8 +27,10 @@ if __name__ == "__main__":
 
     # Loop over jcb_apps and make sure required keys are present and add target_path
     for app, app_conf in jcb_apps.items():
+        print(git_url_in.lower(), app_conf['git_url'].lower())
         if git_url_in.lower() == app_conf['git_url'].lower():
             print(os.path.join(file_path, 'src', 'jcb', 'configuration', 'apps', app))
+            exit(0)
 
     # Fail if we got to here
     exit(1)
