@@ -26,8 +26,12 @@
 ### Installation
 
 ``` shell
-git clone --recurse-submodules https://github.com/noaa-emc/jcb
+git clone https://github.com/noaa-emc/jcb
 cd jcb
+
+# Optional step if you want to run the client integration tests
+./jcb_client_init.py
+
 pip install --prefix=/path/to/where/you/want/installed .
 ```
 
