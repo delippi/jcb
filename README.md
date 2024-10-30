@@ -14,6 +14,9 @@ cd jcb
 ./jcb_client_init.py  # May first require `pip install pyyaml` if it is not available
 
 pip install --prefix=/path/to/where/you/want/installed .
+
+# Run the tests
+pytest
 ```
 
 ### Description
@@ -43,3 +46,5 @@ jcb_obj = jcb.Renderer(dictionary_of_templates)
 jedi_dict_2_a = jcb_obj.render('hofx4d')
 jedi_dict_2_b = jcb_obj.render('variational')
 ```
+
+
