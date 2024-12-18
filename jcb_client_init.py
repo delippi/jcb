@@ -185,7 +185,8 @@ def clone_or_update_repos(jcb_apps: typing.Dict[str, typing.Dict[str, typing.Any
 
             # Clone the repository
             command_string = ' '.join(git_clone)
-            write_message(f'Cloning {app} with command: {command_string}')
+            #write_message(f'Cloning {app} with command: {command_string}')
+            print(f'Cloning {app} with command: {command_string}')
             subprocess.run(git_clone, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         else:
