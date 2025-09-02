@@ -3,5 +3,5 @@ gdas:
   git_ref: develop
 
 rdas:
-  git_url: delippi/jcb-rdas
-  git_ref: feature/initial_setup
+  git_url: noaa-emc/jcb-rdas
+  git_ref: develop
